@@ -1,4 +1,4 @@
-package com.techbulls.commons.securelog.test;
+package com.techbulls.commons.securelog.serialization;
 
 import com.techbulls.commons.securelog.annotation.LogSensitive;
 

@@ -5,9 +5,11 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
+import com.techbulls.commons.securelog.ValueFormatter;
 import com.techbulls.commons.securelog.annotation.LogSensitive;
 
-import java.lang.reflect.Field;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 public class SecureLogBeanSerializerModifier extends BeanSerializerModifier {
@@ -15,11 +17,11 @@ public class SecureLogBeanSerializerModifier extends BeanSerializerModifier {
     public List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription beanDesc, List<BeanPropertyWriter> beanProperties) {
         for (BeanPropertyWriter writer : beanProperties) {
             LogSensitive annotation = writer.getAnnotation(LogSensitive.class);
-
             if (annotation != null) {
                 JsonSerializer<Object> delegate = writer.getSerializer();
                 String secureValue = annotation.value();
-                SecurePropertySerializer<Object> serializer = new SecurePropertySerializer<Object>(delegate, secureValue);
+                ValueFormatter formatter = instantiate(annotation.formatter());
+                SecurePropertySerializer<Object> serializer = new SecurePropertySerializer<Object>(delegate, formatter, secureValue);
                 writer.assignSerializer(serializer);
             }
         }
@@ -30,5 +32,9 @@ public class SecureLogBeanSerializerModifier extends BeanSerializerModifier {
     @Override
     public JsonSerializer<?> modifySerializer(SerializationConfig config, BeanDescription beanDesc, JsonSerializer<?> serializer) {
         return super.modifySerializer(config, beanDesc, serializer);
+    }
+
+    protected ValueFormatter instantiate(Class<? extends ValueFormatter> cls) {
+        return SecureLogUtils.instantiate(cls);
     }
 }
