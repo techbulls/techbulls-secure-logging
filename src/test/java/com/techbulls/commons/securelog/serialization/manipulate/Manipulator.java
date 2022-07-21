@@ -40,8 +40,9 @@ public class Manipulator {
         cp.importPackage("com.techbulls.commons.securelog.serialization");
         CtClass testClass = cp.get("com.techbulls.commons.securelog.serialization.TestBean");
         testClass.addMethod(CtNewMethod.make(
-                "public void toTest(){" +
-                        "System.out.println(\"test\");" +
+                "public String toString(){" +
+                        "System.out.println(SecureLogUtils.safeToString(this));"+
+                        "return \"ad\"+SecureLogUtils.safeToString(this);" +
                         "}",
                 testClass
         ));
@@ -56,7 +57,7 @@ public class Manipulator {
 
 
 
-        Util.invokeViaReflection(clazz, "toTest");
+        Util.invokeViaReflection(clazz, "toString");
 
 
     }
