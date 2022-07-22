@@ -8,8 +8,6 @@ import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 import com.techbulls.commons.securelog.ValueFormatter;
 import com.techbulls.commons.securelog.annotation.LogSensitive;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 public class SecureLogBeanSerializerModifier extends BeanSerializerModifier {
@@ -19,9 +17,7 @@ public class SecureLogBeanSerializerModifier extends BeanSerializerModifier {
             LogSensitive annotation = writer.getAnnotation(LogSensitive.class);
             if (annotation != null) {
                 JsonSerializer<Object> delegate = writer.getSerializer();
-                String secureValue = annotation.value();
-                ValueFormatter formatter = instantiate(annotation.formatter());
-                SecurePropertySerializer<Object> serializer = new SecurePropertySerializer<Object>(delegate, formatter, secureValue);
+                SecurePropertySerializer<Object> serializer = new SecurePropertySerializer<>(delegate, annotation);
                 writer.assignSerializer(serializer);
             }
         }
@@ -32,9 +28,5 @@ public class SecureLogBeanSerializerModifier extends BeanSerializerModifier {
     @Override
     public JsonSerializer<?> modifySerializer(SerializationConfig config, BeanDescription beanDesc, JsonSerializer<?> serializer) {
         return super.modifySerializer(config, beanDesc, serializer);
-    }
-
-    protected ValueFormatter instantiate(Class<? extends ValueFormatter> cls) {
-        return SecureLogUtils.instantiate(cls);
     }
 }

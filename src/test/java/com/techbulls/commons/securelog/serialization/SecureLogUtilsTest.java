@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techbulls.commons.securelog.ValueFormatter;
 import com.techbulls.commons.securelog.annotation.LogSensitive;
+import com.techbulls.commons.securelog.annotation.SecureLog;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -18,7 +19,7 @@ public class SecureLogUtilsTest {
         bean.setPublicInt(456);
         bean.setSecureString("secret");
         bean.setFormattedSecureString("ABCdefGHI");
-        bean.setSecureInt(1234);
+        bean.setSecureInt(null);
 
         String safeToString = SecureLogUtils.safeToString(bean);
 
@@ -54,6 +55,7 @@ public class SecureLogUtilsTest {
         Assert.assertEquals(value, child.asText());
     }
 
+    @SecureLog
     public static class TestBean {
         private String publicString;
 
@@ -62,7 +64,7 @@ public class SecureLogUtilsTest {
         @LogSensitive(value = "xxxxxxx")
         private String secureString;
 
-        @LogSensitive(value = "XXX")
+        @LogSensitive
         private Integer secureInt;
 
         @LogSensitive(formatter = ExampleValueFormatter.class)

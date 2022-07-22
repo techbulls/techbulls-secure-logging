@@ -9,4 +9,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SecureLog {
     boolean pretty() default false;
+
+    Class<?> view() default Default.class;
+
+    class Default {
+
+    }
 }

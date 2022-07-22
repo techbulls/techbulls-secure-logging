@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.ser.PropertyWriter;
 import com.fasterxml.jackson.databind.util.NameTransformer;
 import com.techbulls.commons.securelog.ValueFormatter;
+import com.techbulls.commons.securelog.annotation.LogSensitive;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -19,12 +20,10 @@ public class SecurePropertySerializer<T> extends JsonSerializer<T> {
     private final ValueFormatter formatter;
     private final String secureValue;
 
-
-
-    public SecurePropertySerializer(JsonSerializer<T> delegate, ValueFormatter formatter, String secureValue) {
+    public SecurePropertySerializer(JsonSerializer<T> delegate, LogSensitive annotation) {
         this.delegate = delegate;
-        this.formatter = formatter;
-        this.secureValue = secureValue;
+        this.formatter = SecureLogUtils.instantiate(annotation.formatter());
+        this.secureValue = annotation.value();
     }
 
     @Override
@@ -40,11 +39,6 @@ public class SecurePropertySerializer<T> extends JsonSerializer<T> {
     @Override
     public JsonSerializer<?> withFilterId(Object filterId) {
         return delegate.withFilterId(filterId);
-    }
-
-    @Override
-    public void serializeWithType(T value, JsonGenerator gen, SerializerProvider serializers, TypeSerializer typeSer) throws IOException {
-        gen.writeString(formatter.format(value, secureValue));
     }
 
     @Override
@@ -83,6 +77,11 @@ public class SecurePropertySerializer<T> extends JsonSerializer<T> {
     }
 
     public void serialize(T value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+        gen.writeString(formatter.format(value, secureValue));
+    }
+
+    @Override
+    public void serializeWithType(T value, JsonGenerator gen, SerializerProvider serializers, TypeSerializer typeSer) throws IOException {
         gen.writeString(formatter.format(value, secureValue));
     }
 }

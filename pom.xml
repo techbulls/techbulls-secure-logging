@@ -14,12 +14,9 @@
         <connection>git@github.com:techbulls/techbulls-secure-logging.git</connection>
         <developerConnection>scm:git@github.com:techbulls/techbulls-secure-logging.git</developerConnection>
     </scm>
-
     <properties>
-        <javac.src.version>1.7</javac.src.version>
-        <javac.target.version>1.7</javac.target.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -32,6 +29,13 @@
             <version>4.13</version>
             <scope>test</scope>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.sun.tools</groupId>-->
+<!--            <artifactId>tools</artifactId>-->
+<!--            <version>1.0</version>-->
+<!--            <scope>system</scope>-->
+<!--            <systemPath>${java.home}/../lib/tools.jar</systemPath>-->
+<!--        </dependency>-->
     </dependencies>
     <build>
         <plugins>

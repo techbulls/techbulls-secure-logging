@@ -26,3 +26,6 @@ IntelliJ IDEA sepecific files
 *.idea
 *.iml
 
+# Maven Files
+target
+
