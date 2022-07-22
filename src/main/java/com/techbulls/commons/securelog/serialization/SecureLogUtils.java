@@ -10,12 +10,17 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 public class SecureLogUtils {
-    public static String safeToString(Object bean) throws JsonProcessingException {
+    public static String safeToString(Object bean){
         SecureLogBeanSerializerModifier serializerModifier = new SecureLogBeanSerializerModifier();
         SerializerFactory serializerFactory = BeanSerializerFactory.instance.withSerializerModifier(serializerModifier);
         ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializerFactory(serializerFactory);
-        return mapper.writeValueAsString(bean);
+        try {
+            return mapper.writeValueAsString(bean);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     static ValueFormatter instantiate(Class<? extends ValueFormatter> cls) {

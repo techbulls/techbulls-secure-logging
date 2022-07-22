@@ -1,7 +1,10 @@
+com/techbulls/commons/securelog/TestPojo.class
 com/techbulls/commons/securelog/serialization/SecurePropertySerializer.class
 com/techbulls/commons/securelog/DefaultValueFormatter.class
 com/techbulls/commons/securelog/ValueFormatter.class
+com/techbulls/commons/securelog/Main.class
 com/techbulls/commons/securelog/annotation/LogSensitive.class
 com/techbulls/commons/securelog/annotation/SecureLog.class
 com/techbulls/commons/securelog/serialization/SecureLogUtils.class
+com/techbulls/commons/securelog/annotation/SecureClass.class
 com/techbulls/commons/securelog/serialization/SecureLogBeanSerializerModifier.class

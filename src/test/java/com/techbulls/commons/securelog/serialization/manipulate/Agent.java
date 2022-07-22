@@ -7,4 +7,10 @@ public class Agent {
         StringTransformer transformer = new StringTransformer();
         instrumentation.addTransformer(transformer);
     }
+
+    public static void agentmain(String args, Instrumentation instrumentation) {
+        System.out.println("PRE MAIN");
+        StringTransformer transformer = new StringTransformer();
+        instrumentation.addTransformer(transformer);
+    }
 }
