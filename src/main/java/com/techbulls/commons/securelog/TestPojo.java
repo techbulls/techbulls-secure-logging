@@ -1,13 +1,15 @@
 package com.techbulls.commons.securelog;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.techbulls.commons.securelog.annotation.LogSensitive;
 import com.techbulls.commons.securelog.annotation.SecureClass;
+import com.techbulls.commons.securelog.serialization.SecureLogUtils;
 
 
 @SecureClass()
 public class TestPojo {
     private String publicData;
-    @LogSensitive(value = "XYZABCDE")
+    @LogSensitive(value = "XXXX")
     private String confidential;
 
     public String getPublicData() {
@@ -33,12 +35,5 @@ public class TestPojo {
                 ", confidential='" + confidential + '\'' +
                 '}';
     }
-//    public String toString(){
-//        try {
-//            return SecureLogUtils.safeToString(this);
-//        } catch (JsonProcessingException e) {
-//            e.printStackTrace();
-//        }
-//        return "";
-//    }
+
 }

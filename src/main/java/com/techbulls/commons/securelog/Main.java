@@ -9,7 +9,6 @@ public class Main {
         tb.setPublicData("public");
         tb.setConfidential("secret");
 
-        System.out.println(tb.toString());
-        System.out.println(tb.getClass().getAnnotatedInterfaces());
+        System.out.println(tb);
     }
 }
