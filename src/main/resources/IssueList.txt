@@ -1,0 +1,1 @@
+1)NOE in case Annotation SecureLog not on class
