@@ -1,3 +1,4 @@
 1)NOE in case Annotation SecureLog not on class | FIXED
 2)In case when getter setters methods are not present Private|Protected variables
-are not being logged in case when getter setter methods are not present
+are not being logged
+3)In case of null values are not masked

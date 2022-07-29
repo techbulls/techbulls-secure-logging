@@ -31,14 +31,19 @@ public class TestCases {
         ic2.setValue("xx");
         bean.setInnerClass(ic);
         List<InnerClass> icl=new LinkedList<>();
+        ic.nestedInnerClass=new NestedInnerClass();
+        ic.setSecret("sec");
+        ic.setValue("val");
+        ic.nestedSecureInnerClass=new NestedInnerClass();
+        bean.setInnerClass(ic);
         icl.add(ic);
         icl.add(ic2);
         bean.setInnerClassList(icl);
         bean.innerClassSecureList=icl;
+        bean.innerSecureClass=new InnerClass();
         safeToString = SecureLogUtils.safeToString(bean);
         TestUtils.testObject(safeToString,bean,bean.getClass());
         System.out.println("TS02:"+safeToString);
-
     }
 
 
@@ -69,6 +74,9 @@ public class TestCases {
         private String hidden;
 
         private InnerClass innerClass;
+
+        @LogSensitive(value="XXXX")
+        public InnerClass innerSecureClass;
 
         @LogSensitive(value="XXXX")
         public List<InnerClass> innerClassSecureList;
@@ -120,15 +128,22 @@ public class TestCases {
     @SecureLog(pretty = true)
     public class InnerClass{
 
-        @LogSensitive(value = "XYZABCDE")
+        @LogSensitive(value = "YYYY")
         private String secret;
 
         private String value;
 
 
+        public NestedInnerClass nestedInnerClass;
+
+        @LogSensitive(value = "YYYY")
+        public NestedInnerClass nestedSecureInnerClass;
+
+
         public String getSecret() {
             return secret;
         }
+
 
         public void setSecret(String secret) {
             this.secret = secret;
@@ -141,5 +156,14 @@ public class TestCases {
         public void setValue(String value) {
             this.value = value;
         }
+    }
+
+
+    @SecureLog(pretty = true)
+    public class NestedInnerClass{
+        @LogSensitive(value = "ZZZZ")
+        private String secret;
+
+        private String value;
     }
 }
