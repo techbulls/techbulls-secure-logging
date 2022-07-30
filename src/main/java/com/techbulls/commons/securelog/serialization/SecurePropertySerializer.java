@@ -78,7 +78,6 @@ public class SecurePropertySerializer<T> extends JsonSerializer<T> {
 
     public void serialize(T value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
      gen.writeString(formatter.format(value, secureValue));
-     //    gen.writeString("asd".toCharArray(),0,"asd".toCharArray().length);
     }
 
     @Override

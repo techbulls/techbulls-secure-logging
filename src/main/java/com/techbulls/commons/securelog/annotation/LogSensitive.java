@@ -13,4 +13,6 @@ import java.lang.annotation.Target;
 public @interface LogSensitive {
     String value() default "XXXX";
     Class<? extends ValueFormatter> formatter() default DefaultValueFormatter.class;
+
+    boolean secureNullValues() default false;
 }
