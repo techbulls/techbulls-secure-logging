@@ -23,8 +23,12 @@ public class SecureLogUtils {
     public static String safeToString(Object bean) throws JsonProcessingException {
         Class<?> cls = bean.getClass();
         SecureLog annotation = cls.getAnnotation(SecureLog.class);
-        Class<?> view = annotation.view();
-        boolean pretty = annotation != null && annotation.pretty();
+        Class<?> view =null;
+        boolean pretty =false;
+        if(annotation!=null) {
+            view = annotation.view();
+            pretty = annotation != null && annotation.pretty();
+        }
         return safeToString(bean, pretty, view);
     }
 
