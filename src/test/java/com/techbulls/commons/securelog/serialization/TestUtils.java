@@ -13,7 +13,11 @@ public class TestUtils {
 
     public static String getExpectedValue(Object bean, Field f, LogSensitive annotation) throws IllegalAccessException {
         ValueFormatter formatter = SecureLogUtils.instantiate(annotation.formatter());
-        return formatter.format(f.get(bean).toString(), annotation.value());
+        if(f.get(bean)!=null) {
+            return formatter.format(f.get(bean).toString(), annotation.value());
+        }else{
+            return formatter.format("", annotation.value());
+        }
     }
 
     public static void assertContainsNodeWithText(JsonNode node, String key, String value) {
@@ -33,12 +37,12 @@ public class TestUtils {
             f.setAccessible(true);
             Object value = f.get(bean);
             if (annotation!=null) {
+                String expected =TestUtils.getExpectedValue(bean, f, annotation);
                 if (value != null) {
-                    String expected =TestUtils.getExpectedValue(bean, f, annotation);
                     System.out.println(count+")Secure Field: ["+f.getType().getName()+"] "+f.getName()+" Expected:"+expected+"\tActual:"+node.get(f.getName()).asText());
                     TestUtils.assertContainsNodeWithText(node, f.getName(), expected);
                 }else{
-                    System.out.println(count+")Secure Field NULL: ["+f.getType().getName()+"] "+f.getName());
+                    System.out.println(count+")Secure Field NULL: ["+f.getType().getName()+"] "+f.getName()+" Expected:"+expected+"\tActual:"+node.get(f.getName()).asText());
                 }
             }else{
                 System.out.println(count+")Public Field: ["+f.getType().getName()+"] "+f.getName());
