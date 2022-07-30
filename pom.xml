@@ -40,7 +40,7 @@
     <build>
         <resources>
             <resource>
-                <directory>${project.basedir}/src/main/resources/META-INF</directory>
+                <directory>src/main/apt/META-INF</directory>
                 <excludes>
                     <exclude>javax.annotation.processing.Processor</exclude>
                 </excludes>
@@ -71,7 +71,7 @@
                             <outputDirectory>${project.build.outputDirectory}</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${project.basedir}/src/main/resources</directory>
+                                    <directory>${project.basedir}/src/main/apt</directory>
                                 </resource>
                             </resources>
                         </configuration>
