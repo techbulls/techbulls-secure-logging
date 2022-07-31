@@ -1,5 +1,7 @@
 package com.techbulls.commons.securelog.serialization;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -16,6 +18,8 @@ public class SecureLogUtils {
         SecureLogBeanSerializerModifier serializerModifier = new SecureLogBeanSerializerModifier();
         SerializerFactory serializerFactory = BeanSerializerFactory.instance.withSerializerModifier(serializerModifier);
         ObjectMapper mapper = new ObjectMapper();
+        //to serialize private fields
+        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         mapper.setSerializerFactory(serializerFactory);
         return mapper;
     });

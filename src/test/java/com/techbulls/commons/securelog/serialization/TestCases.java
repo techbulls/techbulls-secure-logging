@@ -83,6 +83,11 @@ public class TestCases {
 
         private List<InnerClass> innerClassList;
 
+        private String privateData;
+
+        @LogSensitive(value="XXXX")
+        private String privateSecureData;
+
         public String getPublicData() {
             return publicData;
         }
