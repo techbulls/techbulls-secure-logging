@@ -19,7 +19,11 @@ public class SecureLogBeanSerializerModifier extends BeanSerializerModifier {
             if (annotation != null) {
                 JsonSerializer<Object> delegate = writer.getSerializer();
                 SecurePropertySerializer<Object> serializer = new SecurePropertySerializer<Object>(delegate, annotation);
-                writer.assignNullSerializer(new NullSecurePropertySerializer(annotation));
+
+                if (annotation.secureNullValues()) {
+                    writer.assignNullSerializer(new NullSecurePropertySerializer(annotation));
+                }
+
                 writer.assignSerializer(serializer);
             }
         }
