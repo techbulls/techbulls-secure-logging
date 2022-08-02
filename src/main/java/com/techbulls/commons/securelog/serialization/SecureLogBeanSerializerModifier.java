@@ -11,7 +11,6 @@ import java.util.List;
 
 public class SecureLogBeanSerializerModifier extends BeanSerializerModifier {
 
-
     @Override
     public List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription beanDesc, List<BeanPropertyWriter> beanProperties) {
         for (BeanPropertyWriter writer : beanProperties) {

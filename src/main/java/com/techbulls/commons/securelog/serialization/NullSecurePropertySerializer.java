@@ -22,6 +22,5 @@ public class NullSecurePropertySerializer<T> extends JsonSerializer<T> {
     @Override
     public void serialize(Object o, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
         jsonGenerator.writeString(formatter.format(o, secureValue));
-
     }
 }

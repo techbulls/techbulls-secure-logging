@@ -23,6 +23,7 @@ public class SecureLogUtilsTest {
 
         String safeToString = SecureLogUtils.safeToString(bean);
 
+        System.out.println("ToString: " + bean.toString());
         System.out.println("Safe toString(): " + safeToString);
 
         ObjectMapper mapper = new ObjectMapper();
@@ -117,4 +118,6 @@ public class SecureLogUtilsTest {
             return value.toString().replaceAll("[A-Z]", "X");
         }
     }
+
+
 }
