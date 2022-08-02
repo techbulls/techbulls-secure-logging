@@ -16,7 +16,7 @@ public class TestCases {
         bean.setSecretQueue(new LinkedList<>());
         bean.setSecretMap(new HashMap<>());
         bean.setSecretSet(new HashSet());
-        String safeToString = SecureLogUtils.safeToString(bean);
+        String safeToString = SecureJson.toJson(bean);
         TestUtils.testObject(safeToString,bean,bean.getClass());
         System.out.println("TS01:"+safeToString);
 
@@ -41,7 +41,7 @@ public class TestCases {
         bean.setInnerClassList(icl);
         bean.innerClassSecureList=icl;
         bean.innerSecureClass=new InnerClass();
-        safeToString = SecureLogUtils.safeToString(bean);
+        safeToString = SecureJson.toJson(bean);
         TestUtils.testObject(safeToString,bean,bean.getClass());
         System.out.println("TS02:"+safeToString);
     }

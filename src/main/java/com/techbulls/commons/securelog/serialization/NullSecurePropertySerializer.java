@@ -15,7 +15,7 @@ public class NullSecurePropertySerializer<T> extends JsonSerializer<T> {
     private final String secureValue;
 
     public NullSecurePropertySerializer(LogSensitive annotation) {
-        this.formatter = SecureLogUtils.instantiate(annotation.formatter());
+        this.formatter = SecureJson.instantiate(annotation.formatter());
         this.secureValue = annotation.value();
     }
 

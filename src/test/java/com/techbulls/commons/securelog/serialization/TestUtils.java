@@ -13,7 +13,7 @@ public class TestUtils {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static String getExpectedValue(Object bean, Field f, LogSensitive annotation) throws IllegalAccessException {
-        ValueFormatter formatter = SecureLogUtils.instantiate(annotation.formatter());
+        ValueFormatter formatter = SecureJson.instantiate(annotation.formatter());
         if(f.get(bean)!=null) {
             return formatter.format(f.get(bean).toString(), annotation.value());
         }else{

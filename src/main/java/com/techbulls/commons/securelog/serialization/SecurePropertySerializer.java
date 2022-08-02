@@ -22,7 +22,7 @@ public class SecurePropertySerializer<T> extends JsonSerializer<T> {
 
     public SecurePropertySerializer(JsonSerializer<T> delegate, LogSensitive annotation) {
         this.delegate = delegate;
-        this.formatter = SecureLogUtils.instantiate(annotation.formatter());
+        this.formatter = SecureJson.instantiate(annotation.formatter());
         this.secureValue = annotation.value();
     }
 

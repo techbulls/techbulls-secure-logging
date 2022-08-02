@@ -11,9 +11,9 @@ import com.techbulls.commons.securelog.annotation.SecureLog;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-public class SecureLogUtils {
-
+public class SecureJson {
     private static ObjectMapper mapper;
+
     private static Object mutex = new Object();
 
     private static ObjectMapper mapper() {
@@ -21,10 +21,7 @@ public class SecureLogUtils {
             synchronized (mutex) {
                 // Double check after acquiring mutex that the mapper was not initialized.
                 if (mapper == null) {
-                    mapper = new ObjectMapper();
-                    SecureLogBeanSerializerModifier serializerModifier = new SecureLogBeanSerializerModifier();
-                    SerializerFactory serializerFactory = BeanSerializerFactory.instance.withSerializerModifier(serializerModifier);
-                    mapper.setSerializerFactory(serializerFactory);
+                    mapper = initMapper(new ObjectMapper());
                 }
             }
         }
@@ -32,11 +29,19 @@ public class SecureLogUtils {
         return mapper;
     }
 
-    private static ObjectWriter objectWriter(boolean prettyPrint) {
-        return prettyPrint ? mapper().writerWithDefaultPrettyPrinter() : mapper().writer();
+
+    private static ObjectMapper initMapper(ObjectMapper m) {
+        SecureLogBeanSerializerModifier serializerModifier = new SecureLogBeanSerializerModifier();
+        SerializerFactory serializerFactory = BeanSerializerFactory.instance.withSerializerModifier(serializerModifier);
+        m.setSerializerFactory(serializerFactory);
+        return m;
     }
 
-    public static String safeToString(Object bean) throws JsonProcessingException {
+    private static ObjectWriter objectWriter(ObjectMapper mapper, boolean prettyPrint) {
+        return prettyPrint ? mapper.writerWithDefaultPrettyPrinter() : mapper().writer();
+    }
+
+    public static String toJson(Object bean) throws JsonProcessingException {
         Class<?> cls = bean.getClass();
         SecureLog annotation = cls.getAnnotation(SecureLog.class);
         Class<?> view =null;
@@ -45,11 +50,15 @@ public class SecureLogUtils {
             view = annotation.view();
             pretty = annotation != null && annotation.pretty();
         }
-        return safeToString(bean, pretty, view);
+        return toJson(bean, pretty, view);
     }
 
-    public static String safeToString(Object bean, boolean prettyPrint, Class<?> view) throws JsonProcessingException {
-        ObjectWriter writer = objectWriter(prettyPrint);
+    public static String toJson(Object bean, boolean prettyPrint, Class<?> view) throws JsonProcessingException {
+        return toJson(mapper(), bean, prettyPrint, view);
+    }
+
+    public static String toJson(ObjectMapper mapper, Object bean, boolean prettyPrint, Class<?> view) throws JsonProcessingException {
+        ObjectWriter writer = objectWriter(mapper, prettyPrint);
         if (view != SecureLog.Default.class) {
             writer = writer.withView(view);
         }
