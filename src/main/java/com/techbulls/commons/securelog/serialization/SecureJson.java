@@ -68,6 +68,7 @@ public class SecureJson {
     static ValueFormatter instantiate(Class<? extends ValueFormatter> cls) {
         try {
             Constructor<? extends ValueFormatter> constructor = cls.getDeclaredConstructor();
+            constructor.setAccessible(true);
             if (constructor.getParameterCount() > 0) {
                 throw new IllegalStateException(cls.getName() + " should have a null-arg constructor");
             }
