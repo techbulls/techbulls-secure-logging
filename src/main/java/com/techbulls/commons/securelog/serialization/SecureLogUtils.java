@@ -1,7 +1,5 @@
 package com.techbulls.commons.securelog.serialization;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,16 +13,29 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 public class SecureLogUtils {
-    private static final ThreadLocal<ObjectMapper> TL = ThreadLocal.withInitial(() -> {
-        SecureLogBeanSerializerModifier serializerModifier = new SecureLogBeanSerializerModifier();
-        SerializerFactory serializerFactory = BeanSerializerFactory.instance.withSerializerModifier(serializerModifier);
-        ObjectMapper mapper = new ObjectMapper();
-        //to serialize private fields
-        //mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-        mapper.setSerializerFactory(serializerFactory);
-        mapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
+
+    private static ObjectMapper mapper;
+    private static Object mutex = new Object();
+
+    private static ObjectMapper mapper() {
+        if (mapper == null) {
+            synchronized (mutex) {
+                // Double check after acquiring mutex that the mapper was not initialized.
+                if (mapper == null) {
+                    mapper = new ObjectMapper();
+                    SecureLogBeanSerializerModifier serializerModifier = new SecureLogBeanSerializerModifier();
+                    SerializerFactory serializerFactory = BeanSerializerFactory.instance.withSerializerModifier(serializerModifier);
+                    mapper.setSerializerFactory(serializerFactory);
+                }
+            }
+        }
+
         return mapper;
-    });
+    }
+
+    private static ObjectWriter objectWriter(boolean prettyPrint) {
+        return prettyPrint ? mapper().writerWithDefaultPrettyPrinter() : mapper().writer();
+    }
 
     public static String safeToString(Object bean) throws JsonProcessingException {
         Class<?> cls = bean.getClass();
@@ -39,7 +50,7 @@ public class SecureLogUtils {
     }
 
     public static String safeToString(Object bean, boolean prettyPrint, Class<?> view) throws JsonProcessingException {
-        ObjectWriter writer = prettyPrint? TL.get().writerWithDefaultPrettyPrinter() : TL.get().writer();
+        ObjectWriter writer = objectWriter(prettyPrint);
         if (view != SecureLog.Default.class) {
             writer = writer.withView(view);
         }

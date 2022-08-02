@@ -1,13 +1,18 @@
 package com.techbulls.commons.securelog.serialization;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.techbulls.commons.securelog.annotation.LogSensitive;
 import com.techbulls.commons.securelog.annotation.SecureLog;
 import org.junit.Test;
 
 import java.util.*;
+
+import static com.techbulls.commons.securelog.serialization.TestUtils.assertContainsNodeWithText;
+import static com.techbulls.commons.securelog.serialization.TestUtils.assertContainsNodeWithoutText;
 
 public class TestCases {
     @Test
@@ -48,16 +53,60 @@ public class TestCases {
         System.out.println("TS02:"+safeToString);
     }
 
+    @Test
+    public void testSafeToStringWithVisibility() throws JsonProcessingException, IllegalAccessException {
+        AnyPojo ap=new AnyPojo();
+        ap.protectedData="Protected Data";
+        ap.publicData="Public Data";
+        ap.privateData="Private Data";
+
+        String json = SecureLogUtils.safeToString(ap);
+        System.out.println("TS01: " + json);
+        JsonNode root = TestUtils.asJsonNode(json);
+        assertContainsNodeWithText(root, "protectedData", ap.protectedData);
+        assertContainsNodeWithText(root, "publicData", ap.publicData);
+        assertContainsNodeWithText(root, "privateData", ap.privateData);
+
+        NonPrivate np=new NonPrivate();
+        np.protectedData="Protected Data";
+        np.publicData="Public Data";
+        np.privateData="Private Data";
+
+        json = SecureLogUtils.safeToString(np);
+        System.out.println("TS02: " + json);
+        root = TestUtils.asJsonNode(json);
+        assertContainsNodeWithText(root, "protectedData", np.protectedData);
+        assertContainsNodeWithText(root, "publicData", np.publicData);
+        assertContainsNodeWithoutText(root, "privateData", np.privateData);
+
+
+    }
+
 
     public interface View{
         public interface Show{}
         public interface Hide{}
     }
 
-//@SecureLog(pretty = true,view = View.Hide.class)
-@SecureLog(pretty = true)
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.)
-public static class CollectionTestPojo {
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
+public class AnyPojo {
+    private String privateData;
+    protected String protectedData;
+    public String publicData;
+}
+
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.NON_PRIVATE)
+public class NonPrivate {
+
+    private String privateData;
+    protected String protectedData;
+    public String publicData;
+}
+
+    //@SecureLog(pretty = true,view = View.Hide.class)
+@SecureLog
+//@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
+public class CollectionTestPojo {
 
         private String publicData;
 

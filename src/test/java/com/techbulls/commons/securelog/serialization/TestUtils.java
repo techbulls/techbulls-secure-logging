@@ -10,6 +10,7 @@ import org.junit.Assert;
 import java.lang.reflect.Field;
 
 public class TestUtils {
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static String getExpectedValue(Object bean, Field f, LogSensitive annotation) throws IllegalAccessException {
         ValueFormatter formatter = SecureLogUtils.instantiate(annotation.formatter());
@@ -22,13 +23,17 @@ public class TestUtils {
 
     public static void assertContainsNodeWithText(JsonNode node, String key, String value) {
         JsonNode child = node.get(key);
-        Assert.assertNotNull(child);
+        Assert.assertNotNull("Unable to find key " + key + " in the given JSON", child);
         Assert.assertEquals(value, child.asText());
     }
 
+    public static void assertContainsNodeWithoutText(JsonNode node, String key, String value) {
+        JsonNode child = node.get(key);
+        Assert.assertEquals(null,child);
+    }
+
     public static void testObject(String safeToString,Object bean,Class T) throws JsonProcessingException, IllegalAccessException {
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode node = mapper.readTree(safeToString);
+        JsonNode node = MAPPER.readTree(safeToString);
         Field[] fields = T.getDeclaredFields();
         int count=1;
         System.out.println("Fields");
@@ -49,5 +54,20 @@ public class TestUtils {
             }
             count++;
         }
+    }
+    public static void assertNodeDoesNotExist(JsonNode root, String key) {
+        JsonNode node = root.get(key);
+        Assert.assertNull("Node " + key + " exists", node);
+    }
+
+    public static void assertNodeIsNull(JsonNode root, String key) {
+        JsonNode node = root.get(key);
+        Assert.assertNotNull("Unable to find key " + key + " in the given JSON", node);
+        String value = node.asText();
+        Assert.assertNull(value);
+    }
+
+    public static JsonNode asJsonNode(String json) throws JsonProcessingException {
+        return MAPPER.readTree(json);
     }
 }
