@@ -27,7 +27,6 @@ public class SecureLogBeanSerializerModifier extends BeanSerializerModifier {
                 writer.assignSerializer(serializer);
             }
         }
-
         return beanProperties;
     }
 

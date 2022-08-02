@@ -1,5 +1,6 @@
 package com.techbulls.commons.securelog.serialization;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.techbulls.commons.securelog.annotation.LogSensitive;
@@ -17,7 +18,8 @@ public class TestCases {
         bean.setSecretMap(new HashMap<>());
         bean.setSecretSet(new HashSet());
         String safeToString = SecureLogUtils.safeToString(bean);
-        TestUtils.testObject(safeToString,bean,bean.getClass());
+        bean.setHidden("test");
+        //TestUtils.testObject(safeToString,bean,bean.getClass());
         System.out.println("TS01:"+safeToString);
 
         bean.setPublicData("PUBLIC");
@@ -52,8 +54,10 @@ public class TestCases {
         public interface Hide{}
     }
 
-    @SecureLog(pretty = true)
-    public static class CollectionTestPojo {
+//@SecureLog(pretty = true,view = View.Hide.class)
+@SecureLog(pretty = true)
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.)
+public static class CollectionTestPojo {
 
         private String publicData;
 
@@ -71,6 +75,7 @@ public class TestCases {
 
 
         @JsonView(View.Hide.class)
+        @LogSensitive(value = "XXXX",secureNullValues=true)
         private String hidden;
 
         private InnerClass innerClass;
