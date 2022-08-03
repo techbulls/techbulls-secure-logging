@@ -21,7 +21,7 @@ public class SerializeWithViewTest {
         order.setStatus("PENDING");
         order.setId(100l);
 
-        String json = SecureLogUtils.safeToString(order, false, Views.Input.class);
+        String json = SecureJson.toJson(order, false, Views.Input.class);
 
         System.out.println("Json: " + json);
 
@@ -33,7 +33,7 @@ public class SerializeWithViewTest {
         assertNodeDoesNotExist(root, "orderId");
         assertNodeDoesNotExist(root, "status");
 
-        json = SecureLogUtils.safeToString(order, false, Views.Output.class);
+        json = SecureJson.toJson(order, false, Views.Output.class);
 
         System.out.println("Json: " + json);
 

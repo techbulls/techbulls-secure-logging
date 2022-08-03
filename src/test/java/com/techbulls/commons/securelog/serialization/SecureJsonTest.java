@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import java.lang.reflect.Field;
 
-public class SecureLogUtilsTest {
+public class SecureJsonTest {
     @Test
     public void testSecureToString() throws JsonProcessingException, IllegalAccessException {
         TestBean bean = new TestBean();
@@ -21,7 +21,7 @@ public class SecureLogUtilsTest {
         bean.setFormattedSecureString("ABCdefGHI");
         bean.setSecureInt(null);
 
-        String safeToString = SecureLogUtils.safeToString(bean);
+        String safeToString = SecureJson.toJson(bean);
 
         System.out.println("ToString: " + bean.toString());
         System.out.println("Safe toString(): " + safeToString);
@@ -46,7 +46,7 @@ public class SecureLogUtilsTest {
     }
 
     private String getExpectedValue(Object bean, Field f, LogSensitive annotation) throws IllegalAccessException {
-        ValueFormatter formatter = SecureLogUtils.instantiate(annotation.formatter());
+        ValueFormatter formatter = SecureJson.instantiate(annotation.formatter());
         return formatter.format(f.get(bean).toString(), annotation.value());
     }
 

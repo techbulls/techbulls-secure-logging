@@ -13,7 +13,7 @@ public class TestUtils {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static String getExpectedValue(Object bean, Field f, LogSensitive annotation) throws IllegalAccessException {
-        ValueFormatter formatter = SecureLogUtils.instantiate(annotation.formatter());
+        ValueFormatter formatter = SecureJson.instantiate(annotation.formatter());
         if(f.get(bean)!=null) {
             return formatter.format(f.get(bean).toString(), annotation.value());
         }else{
@@ -36,7 +36,6 @@ public class TestUtils {
         JsonNode node = MAPPER.readTree(safeToString);
         Field[] fields = T.getDeclaredFields();
         int count=1;
-        System.out.println("Fields");
         for (Field f : fields) {
             LogSensitive annotation = f.getAnnotation(LogSensitive.class);
             f.setAccessible(true);
@@ -44,7 +43,7 @@ public class TestUtils {
             if (annotation!=null) {
                 String expected =TestUtils.getExpectedValue(bean, f, annotation);
                 if (value != null && node.get(f.getName())!=null) {
-                    System.out.println(count+")Secure Field: ["+f.getType().getName()+"] "+f.getName()+" Expected:"+expected+"\tActual:"+node.get(f.getName()).asText());
+//                    System.out.println(count+")Secure Field: ["+f.getType().getName()+"] "+f.getName()+" Expected:"+expected+"\tActual:"+node.get(f.getName()).asText());
                     TestUtils.assertContainsNodeWithText(node, f.getName(), expected);
                 }else{
                     //System.out.println(count+")Secure Field NULL: ["+f.getType().getName()+"] "+f.getName()+" Expected:"+expected+"\tActual:"+node.get(f.getName()).asText());

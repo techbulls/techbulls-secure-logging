@@ -1,10 +1,10 @@
 package com.techbulls.commons.securelog.serialization;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.techbulls.commons.securelog.MaskAlphaValueFormatter;
 import com.techbulls.commons.securelog.annotation.LogSensitive;
 import com.techbulls.commons.securelog.annotation.SecureLog;
 import org.junit.Test;
@@ -22,9 +22,14 @@ public class TestCases {
         bean.setSecretQueue(new LinkedList<>());
         bean.setSecretMap(new HashMap<>());
         bean.setSecretSet(new HashSet());
+<<<<<<< HEAD
+        String safeToString = SecureLogUtils.safeToString(bean);
         bean.setHidden("test");
+        //TestUtils.testObject(safeToString,bean,bean.getClass());
+=======
         String safeToString = SecureJson.toJson(bean);
         TestUtils.testObject(safeToString,bean,bean.getClass());
+>>>>>>> d0e36b45926dbb03ac48f3713f281c6a3c811cee
         System.out.println("TS01:"+safeToString);
 
         bean.setPublicData("PUBLIC");
@@ -35,12 +40,12 @@ public class TestCases {
         ic.setValue("value");
         InnerClass ic2=new InnerClass();
         ic2.setSecret("test");
-        ic2.setValue("ABCD");
+        ic2.setValue("xx");
         bean.setInnerClass(ic);
         List<InnerClass> icl=new LinkedList<>();
         ic.nestedInnerClass=new NestedInnerClass();
         ic.setSecret("sec");
-        ic.setValue("val123");
+        ic.setValue("val");
         ic.nestedSecureInnerClass=new NestedInnerClass();
         bean.setInnerClass(ic);
         icl.add(ic);
@@ -60,8 +65,8 @@ public class TestCases {
         ap.publicData="Public Data";
         ap.privateData="Private Data";
 
-        String json = SecureJson.toJson(ap);
-        System.out.println("TS03:" + json);
+        String json = SecureLogUtils.safeToString(ap);
+        System.out.println("TS01: " + json);
         JsonNode root = TestUtils.asJsonNode(json);
         assertContainsNodeWithText(root, "protectedData", ap.protectedData);
         assertContainsNodeWithText(root, "publicData", ap.publicData);
@@ -72,12 +77,13 @@ public class TestCases {
         np.publicData="Public Data";
         np.privateData="Private Data";
 
-        json = SecureJson.toJson(np);
-        System.out.println("TS04:" + json);
+        json = SecureLogUtils.safeToString(np);
+        System.out.println("TS02: " + json);
         root = TestUtils.asJsonNode(json);
         assertContainsNodeWithText(root, "protectedData", np.protectedData);
         assertContainsNodeWithText(root, "publicData", np.publicData);
         assertContainsNodeWithoutText(root, "privateData", np.privateData);
+
 
     }
 
@@ -90,14 +96,13 @@ public class TestCases {
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class AnyPojo {
     private String privateData;
-    //@LogSensitive(value = "ZZZZ")
     protected String protectedData;
     public String publicData;
 }
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.NON_PRIVATE)
 public class NonPrivate {
-    //@LogSensitive(value = "ZZZZ")
+
     private String privateData;
     protected String protectedData;
     public String publicData;
@@ -107,6 +112,7 @@ public class NonPrivate {
 @SecureLog
 //@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class CollectionTestPojo {
+
         private String publicData;
 
         @LogSensitive(value = "XXXX")
@@ -183,20 +189,18 @@ public class CollectionTestPojo {
 
         public void setInnerClassList(List<InnerClass> innerClassList) {this.innerClassList = innerClassList;}
     }
-
     @SecureLog(pretty = true)
     public class InnerClass{
 
         @LogSensitive(value = "YYYY")
         private String secret;
 
-        @LogSensitive(formatter = MaskAlphaValueFormatter.class,secureNullValues = true)
         private String value;
 
 
         public NestedInnerClass nestedInnerClass;
 
-        @LogSensitive()
+        @LogSensitive(value = "YYYY")
         public NestedInnerClass nestedSecureInnerClass;
 
 
