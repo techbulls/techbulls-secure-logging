@@ -56,7 +56,7 @@ public class SecureJson {
         return prettyPrint ? mapper.writerWithDefaultPrettyPrinter() : mapper().writer();
     }
 
-    public static String toJson(Object bean) throws JsonProcessingException {
+    public static String toJson(Object bean) {
         Class<?> cls = bean.getClass();
         SecureLog annotation = cls.getAnnotation(SecureLog.class);
         Class<?> view =null;
@@ -68,16 +68,21 @@ public class SecureJson {
         return toJson(bean, pretty, view);
     }
 
-    public static String toJson(Object bean, boolean prettyPrint, Class<?> view) throws JsonProcessingException {
+    public static String toJson(Object bean, boolean prettyPrint, Class<?> view) {
         return toJson(mapper(), bean, prettyPrint, view);
     }
 
-    public static String toJson(ObjectMapper mapper, Object bean, boolean prettyPrint, Class<?> view) throws JsonProcessingException {
+    public static String toJson(ObjectMapper mapper, Object bean, boolean prettyPrint, Class<?> view) {
         ObjectWriter writer = objectWriter(mapper, prettyPrint);
         if (view != SecureLog.Default.class) {
             writer = writer.withView(view);
         }
-        return writer.writeValueAsString(bean);
+
+        try {
+            return writer.writeValueAsString(bean);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     static ValueFormatter instantiate(Class<? extends ValueFormatter> cls) {
