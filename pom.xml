@@ -30,6 +30,12 @@
         <connection>git@github.com:techbulls/techbulls-secure-logging.git</connection>
         <developerConnection>scm:git@github.com:techbulls/techbulls-secure-logging.git</developerConnection>
     </scm>
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
