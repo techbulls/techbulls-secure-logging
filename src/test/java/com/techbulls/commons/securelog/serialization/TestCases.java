@@ -1,10 +1,25 @@
+/*
+ *    Copyright 2022 TechBulls SoftTech
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
 package com.techbulls.commons.securelog.serialization;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.techbulls.commons.securelog.MaskAlphaValueFormatter;
+import com.techbulls.commons.securelog.MaskedAlphaValueFormatter;
 import com.techbulls.commons.securelog.annotation.LogSensitive;
 import com.techbulls.commons.securelog.annotation.SecureLog;
 import org.junit.Test;
@@ -190,7 +205,7 @@ public class CollectionTestPojo {
         @LogSensitive(value = "YYYY")
         private String secret;
 
-        @LogSensitive(formatter = MaskAlphaValueFormatter.class,secureNullValues = true)
+        @LogSensitive(formatter = MaskedAlphaValueFormatter.class,secureNullValues = true)
         private String value;
 
 
