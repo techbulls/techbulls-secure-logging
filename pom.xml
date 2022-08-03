@@ -21,8 +21,8 @@
 
     <groupId>com.techbulls.commons.securelog</groupId>
     <artifactId>techbulls-secure-logging</artifactId>
-    <version>1.0.0</version>
-    <name>Secure Logging Helpers</name>
+    <version>0.1</version>
+    <name>techbulls secure logging</name>
     <packaging>jar</packaging>
     <description>A library with annotations to help converting objects to JSONs ommiting sensitive data</description>
     <url>https://github.com/techbulls/techbulls-secure-logging</url>
