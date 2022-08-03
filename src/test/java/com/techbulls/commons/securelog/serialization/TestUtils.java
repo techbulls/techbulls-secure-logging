@@ -1,3 +1,18 @@
+/*
+ *    Copyright 2022 TechBulls SoftTech
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
 package com.techbulls.commons.securelog.serialization;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -10,9 +25,10 @@ import org.junit.Assert;
 import java.lang.reflect.Field;
 
 public class TestUtils {
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static String getExpectedValue(Object bean, Field f, LogSensitive annotation) throws IllegalAccessException {
-        ValueFormatter formatter = SecureLogUtils.instantiate(annotation.formatter());
+        ValueFormatter formatter = SecureJson.instantiate(annotation.formatter());
         if(f.get(bean)!=null) {
             return formatter.format(f.get(bean).toString(), annotation.value());
         }else{
@@ -22,13 +38,12 @@ public class TestUtils {
 
     public static void assertContainsNodeWithText(JsonNode node, String key, String value) {
         JsonNode child = node.get(key);
-        Assert.assertNotNull(child);
+        Assert.assertNotNull("Unable to find key " + key + " in the given JSON", child);
         Assert.assertEquals(value, child.asText());
     }
 
     public static void testObject(String safeToString,Object bean,Class T) throws JsonProcessingException, IllegalAccessException {
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode node = mapper.readTree(safeToString);
+        JsonNode node = MAPPER.readTree(safeToString);
         Field[] fields = T.getDeclaredFields();
         int count=1;
         System.out.println("Fields");
@@ -49,5 +64,20 @@ public class TestUtils {
             }
             count++;
         }
+    }
+    public static void assertNodeDoesNotExist(JsonNode root, String key) {
+        JsonNode node = root.get(key);
+        Assert.assertNull("Node " + key + " exists", node);
+    }
+
+    public static void assertNodeIsNull(JsonNode root, String key) {
+        JsonNode node = root.get(key);
+        Assert.assertNotNull("Unable to find key " + key + " in the given JSON", node);
+        String value = node.asText();
+        Assert.assertNull(value);
+    }
+
+    public static JsonNode asJsonNode(String json) throws JsonProcessingException {
+        return MAPPER.readTree(json);
     }
 }
