@@ -35,9 +35,8 @@ import java.lang.reflect.InvocationTargetException;
  * @see com.techbulls.commons.securelog.annotation.SecureLog
  * @see com.techbulls.commons.securelog.serialization.SecureLogBeanSerializerModifier
  * @see com.techbulls.commons.securelog.serialization.NullSecurePropertySerializer
- * @author Kalpak Gadre
- * @version 1.0.0
- * @since  01 August 2022
+ * @version 0.1
+ * @since 0.1
  * */
 
 public class SecureJson {
@@ -111,7 +110,7 @@ public class SecureJson {
      * and return the secure string
      * @param bean <b>Object</b> that needs to converted to secure JSON string
      * @param prettyPrint <b>boolean</b> that needs to converted to secure JSON string
-     * @return String
+     * @return Stri
      * */
     public static String toJson(ObjectMapper mapper, Object bean, boolean prettyPrint, Class<?> view){
         ObjectWriter writer = objectWriter(mapper, prettyPrint);

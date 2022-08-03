@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.techbulls.commons.securelog.MaskedAlphaValueFormatter;
+import com.techbulls.commons.securelog.ValueFormatter;
 import com.techbulls.commons.securelog.annotation.LogSensitive;
 import com.techbulls.commons.securelog.annotation.SecureLog;
 import org.junit.Test;
@@ -240,5 +240,12 @@ public class CollectionTestPojo {
         private String secret;
 
         private String value;
+    }
+
+    public class MaskedAlphaValueFormatter implements ValueFormatter {
+        @Override
+        public String format(Object value, String secureValue) {
+            return value!=null?value.toString().replaceAll("[A-Za-z]","X"):secureValue;
+        }
     }
 }

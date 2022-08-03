@@ -30,33 +30,11 @@ import com.techbulls.commons.securelog.annotation.LogSensitive;
 import java.io.IOException;
 import java.util.Iterator;
 
-/**
- * <h3>SecurePropertySerializer Class</h3>
- * This class extends JsonSerializer to provide custom serialization of object
- * <p>
- * @see com.techbulls.commons.securelog.ValueFormatter
- * @see com.fasterxml.jackson.databind.JsonSerializer
- * @see com.techbulls.commons.securelog.annotation.LogSensitive
- * @author Kalpak Gadre
- * @version 1.0.0
- * @since  01 August 2022
- * */
 
 public class SecurePropertySerializer<T> extends JsonSerializer<T> {
     private final JsonSerializer<T> delegate;
-    /**The Value formatter used for formatting
-     * */
     private final ValueFormatter formatter;
-    /**The Secure value based on annotation
-     * */
     private final String secureValue;
-
-    /**
-     * The constructor to set up initial properties to the serializer
-     * @param delegate <b>JsonSerializer</b>
-     * @param annotation <b>LogSensitive</b>
-     *                  The annotation the provides with the secure value and formatter
-     * */
 
     public SecurePropertySerializer(JsonSerializer<T> delegate, LogSensitive annotation) {
         this.delegate = delegate;
@@ -114,9 +92,6 @@ public class SecurePropertySerializer<T> extends JsonSerializer<T> {
         delegate.acceptJsonFormatVisitor(visitor, type);
     }
 
-    /**
-     * To serialize the value based on formatter and secure value
-    */
     public void serialize(T value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
        gen.writeString(formatter.format(value, secureValue));
     }

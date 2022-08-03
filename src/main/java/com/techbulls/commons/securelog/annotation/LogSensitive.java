@@ -25,9 +25,8 @@ import java.lang.annotation.Target;
  * <h3>LogSensitive Annotation</h3>
  * This is a field level annotation that will enable masking the field value as per configuration
  * <p>
- * @author Kalpak Gadre
- * @version 1.0.0
- * @since  01 August 2022
+  * @version 0.1
+ * @since  0.1
  * */
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
