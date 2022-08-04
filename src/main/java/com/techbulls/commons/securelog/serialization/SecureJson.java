@@ -28,13 +28,31 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * <h3>SecureJson Class</h3>
+ * This class uses ObjectMapper to write serialized values as per annotations
+ * <p>
+ * @see com.techbulls.commons.securelog.ValueFormatter
+ * @see com.fasterxml.jackson.databind.JsonSerializer
+ * @see com.techbulls.commons.securelog.annotation.LogSensitive
+ * @see com.techbulls.commons.securelog.annotation.SecureLog
+ * @see com.techbulls.commons.securelog.serialization.SecureLogBeanSerializerModifier
+ * @see com.techbulls.commons.securelog.serialization.NullSecurePropertySerializer
+ * @version 0.1
+ * @since 0.1
+ * */
+
 public class SecureJson {
+
     private static ObjectMapper mapper;
 
     private static final Set<ObjectMapper> MAPPERS_ALREADY_INITIALIZED = new HashSet<>();
 
     private static Object mutex = new Object();
 
+    /**
+     * Initializing object mapper
+     * */
     private static ObjectMapper mapper() {
         if (mapper == null) {
             synchronized (mutex) {
@@ -49,6 +67,10 @@ public class SecureJson {
     }
 
 
+    /**This method will set the SerializerFactory configured with SecureLogBeanSerializerModifier to the object mapper
+     * In case of new mapper instance it will be added to mapper set (MAPPERS_ALREADY_INITIALIZED)
+     * @param m <b>ObjectMapper<b/> that is to be initialized with secure serializer modifier
+     * */
     private static ObjectMapper initMapper(ObjectMapper m) {
         if (!MAPPERS_ALREADY_INITIALIZED.contains(m)) {
             SecureLogBeanSerializerModifier serializerModifier = new SecureLogBeanSerializerModifier();
@@ -56,36 +78,55 @@ public class SecureJson {
             m.setSerializerFactory(serializerFactory);
             MAPPERS_ALREADY_INITIALIZED.add(m);
         }
-
         return m;
     }
 
+
+    /**This method returns the writer object based on prettyPrint property
+     * @param mapper <b>ObjectMapper</b>
+     * @param prettyPrint <b>boolean</b> denoting weather prettyPrint writer is to be returned
+     * @return ObjectWriter
+     * */
     private static ObjectWriter objectWriter(ObjectMapper mapper, boolean prettyPrint) {
-        return prettyPrint ? mapper.writerWithDefaultPrettyPrinter() : mapper().writer();
+        return prettyPrint ? mapper.writerWithDefaultPrettyPrinter() : mapper.writer();
     }
 
-    public static String toJson(Object bean) {
+    /**This method accept the bean objects are return the json string with masked values
+     * @param bean <b>Object</b> that needs to converted to secure JSON string
+     * @return String
+     * */
+    public static String toJson(Object bean){
         Class<?> cls = bean.getClass();
         SecureLog annotation = cls.getAnnotation(SecureLog.class);
         Class<?> view =null;
         boolean pretty =false;
         if(annotation!=null) {
             view = annotation.view();
-            pretty = annotation != null && annotation.pretty();
+            pretty = annotation.pretty();
         }
         return toJson(bean, pretty, view);
     }
 
-    public static String toJson(Object bean, boolean prettyPrint, Class<?> view) {
+    /**This method accept the bean objects, prettyPrint property and Class view
+     * and return the secure string as per
+     * @param bean <b>Object</b> that needs to converted to secure JSON string
+     * @return String
+     * */
+    public static String toJson(Object bean, boolean prettyPrint, Class<?> view){
         return toJson(mapper(), bean, prettyPrint, view);
     }
 
-    public static String toJson(ObjectMapper mapper, Object bean, boolean prettyPrint, Class<?> view) {
+    /**This method accepts the bean object, prettyPrint property and Class view
+     * and return the secure string
+     * @param bean <b>Object</b> that needs to converted to secure JSON string
+     * @param prettyPrint <b>boolean</b> that needs to converted to secure JSON string
+     * @return String
+     * */
+    public static String toJson(ObjectMapper mapper, Object bean, boolean prettyPrint, Class<?> view){
         ObjectWriter writer = objectWriter(initMapper(mapper), prettyPrint);
         if (view != SecureLog.Default.class) {
             writer = writer.withView(view);
         }
-
         try {
             return writer.writeValueAsString(bean);
         } catch (JsonProcessingException e) {
@@ -93,6 +134,12 @@ public class SecureJson {
         }
     }
 
+
+    /**This method accepts the bean object, prettyPrint property and Class view
+     * and return the secure string
+     * @param cls <b>ValueFormatter</b> formatter that needs to be instantiated
+     * @return ValueFormatter
+     * */
     static ValueFormatter instantiate(Class<? extends ValueFormatter> cls) {
         try {
             Constructor<? extends ValueFormatter> constructor = cls.getDeclaredConstructor();

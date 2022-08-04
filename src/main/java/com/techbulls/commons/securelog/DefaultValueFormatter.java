@@ -15,8 +15,23 @@
  */
 package com.techbulls.commons.securelog;
 
+/**
+ * <h3>DefaultValueFormatter Class</h3>
+ * The default value formatter that masks the value with default mask value specified
+ * <p>
+ * @see com.techbulls.commons.securelog.ValueFormatter
+ * @version 0.1
+ * @since 0.1
+ * */
 
 public class DefaultValueFormatter implements ValueFormatter {
+
+    /**
+     * This method will return the formatted value
+     * @param value This is the value that needs to be formatted
+     * @param secureValue Default secure masked value specified in the LogSensitive annotation
+     * @return String This is the string value after formatting
+     * */
     @Override
     public String format(Object value, String secureValue) {
         return secureValue;

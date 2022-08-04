@@ -30,6 +30,7 @@ import com.techbulls.commons.securelog.annotation.LogSensitive;
 import java.io.IOException;
 import java.util.Iterator;
 
+
 public class SecurePropertySerializer<T> extends JsonSerializer<T> {
     private final JsonSerializer<T> delegate;
     private final ValueFormatter formatter;
@@ -92,7 +93,7 @@ public class SecurePropertySerializer<T> extends JsonSerializer<T> {
     }
 
     public void serialize(T value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-     gen.writeString(formatter.format(value, secureValue));
+       gen.writeString(formatter.format(value, secureValue));
     }
 
     @Override

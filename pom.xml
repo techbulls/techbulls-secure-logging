@@ -24,7 +24,7 @@
     <version>0.1</version>
     <name>techbulls secure logging</name>
     <packaging>jar</packaging>
-    <description>A library with annotations to help converting objects to JSONs ommiting sensitive data</description>
+    <description>A library with annotations to help converting objects to JSONs omitting sensitive data</description>
     <url>https://github.com/techbulls/techbulls-secure-logging</url>
     <scm>
         <connection>scm:git:git@github.com:techbulls/techbulls-secure-logging.git</connection>

@@ -15,6 +15,23 @@
  */
 package com.techbulls.commons.securelog;
 
+/**
+ * <h3>ValueFormatter Interface</h3>
+ * The base interface for formatting values
+ * <p>
+ * <b>Implementing Classes:</b>
+ * <p>
+ * DefaultValueFormatter
+ * MaskAlphaValueFormatter
+ * <p>
+ * @version 0.1
+ * @since 0.1
+ * */
 public interface ValueFormatter {
+    /**This method will return the formatted value
+     * @param value This is the value that needs to be formatted
+     * @param secureValue secure masked value as specified in the LogSensitive annotation
+     * @return String This is the string value after formatting
+     * */
     String format(Object value, String secureValue);
 }

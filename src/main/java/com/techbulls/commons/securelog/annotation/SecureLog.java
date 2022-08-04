@@ -19,13 +19,25 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
+/**
+ * <h3>SecureLog Annotation</h3>
+ * This is a class level annotation that will allow us to set view for
+ * secure logging and also to specify pretty print json
+ * <p>
+ * @version 0.1
+ * @since 0.1
+ * */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SecureLog {
+    /**Enables pretty json output.
+     * */
     boolean pretty() default false;
 
+    /**A JsonView to be used when converting to json. If not provided, does not use a specific view.
+     * */
     Class<?> view() default Default.class;
+
 
     class Default {
 

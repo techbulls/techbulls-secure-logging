@@ -23,10 +23,9 @@ import com.techbulls.commons.securelog.annotation.LogSensitive;
 
 import java.io.IOException;
 
+
 public class NullSecurePropertySerializer<T> extends JsonSerializer<T> {
-
     private final ValueFormatter formatter;
-
     private final String secureValue;
 
     public NullSecurePropertySerializer(LogSensitive annotation) {
@@ -38,4 +37,5 @@ public class NullSecurePropertySerializer<T> extends JsonSerializer<T> {
     public void serialize(Object o, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
         jsonGenerator.writeString(formatter.format(o, secureValue));
     }
+
 }

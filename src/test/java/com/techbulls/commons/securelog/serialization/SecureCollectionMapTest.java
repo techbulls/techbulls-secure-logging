@@ -1,33 +1,16 @@
-/*
- *    Copyright 2022 TechBulls SoftTech
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
- */
 package com.techbulls.commons.securelog.serialization;
-
-import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.techbulls.commons.securelog.annotation.LogSensitive;
 import com.techbulls.commons.securelog.annotation.SecureLog;
 import org.junit.Test;
 
 import java.util.*;
+public class SecureCollectionMapTest {
 
-public class TestCases {
+
     @Test
     public void testSecureToString() throws JsonProcessingException, IllegalAccessException {
         CollectionTestPojo bean = new CollectionTestPojo();
-        //bean.setList(new ArrayList());
         bean.setSecretQueue(new LinkedList<>());
         bean.setSecretMap(new HashMap<>());
         bean.setSecretSet(new HashSet());
@@ -37,18 +20,17 @@ public class TestCases {
 
         bean.setPublicData("PUBLIC");
         bean.setSecretQueue(null);
-        bean.setHidden("test");
         InnerClass ic=new InnerClass();
         ic.setSecret("test");
         ic.setValue("value");
         InnerClass ic2=new InnerClass();
         ic2.setSecret("test");
-        ic2.setValue("xx");
+        ic2.setValue("ABCD");
         bean.setInnerClass(ic);
         List<InnerClass> icl=new LinkedList<>();
         ic.nestedInnerClass=new NestedInnerClass();
         ic.setSecret("sec");
-        ic.setValue("val");
+        ic.setValue("val123");
         ic.nestedSecureInnerClass=new NestedInnerClass();
         bean.setInnerClass(ic);
         icl.add(ic);
@@ -62,41 +44,36 @@ public class TestCases {
     }
 
 
-    public interface View{
-        public interface Show{}
-        public interface Hide{}
-    }
 
-    @SecureLog(pretty = true)
-    public static class CollectionTestPojo {
-
+    public class CollectionTestPojo {
         private String publicData;
 
-        @LogSensitive(value = "XXXX")
+        @LogSensitive(value = "####")
         private List secretList;
 
-        @LogSensitive(value = "XXXX")
+        @LogSensitive(value = "####")
         private Queue secretQueue;
 
-        @LogSensitive(value = "XXXX")
+        @LogSensitive(value = "####")
         private Set secretSet;
 
-        @LogSensitive(value = "XXXX")
+        @LogSensitive(value = "####")
         private Map<String,Integer> secretMap;
-
-
-        @JsonView(View.Hide.class)
-        private String hidden;
 
         private InnerClass innerClass;
 
-        @LogSensitive(value="XXXX")
+        @LogSensitive(value="####")
         public InnerClass innerSecureClass;
 
-        @LogSensitive(value="XXXX")
+        @LogSensitive(value="####")
         public List<InnerClass> innerClassSecureList;
 
         private List<InnerClass> innerClassList;
+
+        private String privateData;
+
+        @LogSensitive(value="####")
+        private String privateSecureData;
 
         public String getPublicData() {
             return publicData;
@@ -129,10 +106,6 @@ public class TestCases {
         public void setSecretMap(Map<String, Integer> secretMap) {
             this.secretMap = secretMap;
         }
-
-        public String getHidden() { return hidden;  }
-        public void setHidden(String hidden) { this.hidden = hidden;  }
-
         public InnerClass getInnerClass() { return innerClass; }
         public void setInnerClass(InnerClass innerClass) { this.innerClass = innerClass; }
 
@@ -140,18 +113,21 @@ public class TestCases {
 
         public void setInnerClassList(List<InnerClass> innerClassList) {this.innerClassList = innerClassList;}
     }
+
+
     @SecureLog(pretty = true)
     public class InnerClass{
 
         @LogSensitive(value = "YYYY")
         private String secret;
 
+        @LogSensitive()
         private String value;
 
 
         public NestedInnerClass nestedInnerClass;
 
-        @LogSensitive(value = "YYYY")
+        @LogSensitive()
         public NestedInnerClass nestedSecureInnerClass;
 
 
@@ -181,4 +157,6 @@ public class TestCases {
 
         private String value;
     }
+
+
 }
