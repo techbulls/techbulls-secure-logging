@@ -27,8 +27,9 @@
     <description>A library with annotations to help converting objects to JSONs ommiting sensitive data</description>
     <url>https://github.com/techbulls/techbulls-secure-logging</url>
     <scm>
-        <connection>git@github.com:techbulls/techbulls-secure-logging.git</connection>
-        <developerConnection>scm:git@github.com:techbulls/techbulls-secure-logging.git</developerConnection>
+        <connection>scm:git:git@github.com:techbulls/techbulls-secure-logging.git</connection>
+        <developerConnection>scm:git:ssh://github.com:techbulls/techbulls-secure-logging.git</developerConnection>
+        <url>https://github.com/techbulls/techbulls-secure-logging</url>
     </scm>
     <licenses>
         <license>
@@ -36,6 +37,20 @@
             <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </licenses>
+    <developers>
+        <developer>
+            <name>Kalpak Gadre</name>
+            <email>kalpak.gadre@techbulls.com</email>
+            <organization>TechBulls SoftTech</organization>
+            <organizationUrl>https://techbulls.com</organizationUrl>
+        </developer>
+        <developer>
+            <name>Vaibhav Ghatge</name>
+            <email>vaibhav.ghatge@techbulls.com</email>
+            <organization>TechBulls SoftTech</organization>
+            <organizationUrl>https://techbulls.com</organizationUrl>
+        </developer>
+    </developers>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
