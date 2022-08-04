@@ -25,9 +25,13 @@ import com.techbulls.commons.securelog.annotation.SecureLog;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
+import java.util.Set;
 
 public class SecureJson {
     private static ObjectMapper mapper;
+
+    private static final Set<ObjectMapper> MAPPERS_ALREADY_INITIALIZED = new HashSet<>();
 
     private static Object mutex = new Object();
 
@@ -46,9 +50,13 @@ public class SecureJson {
 
 
     private static ObjectMapper initMapper(ObjectMapper m) {
-        SecureLogBeanSerializerModifier serializerModifier = new SecureLogBeanSerializerModifier();
-        SerializerFactory serializerFactory = BeanSerializerFactory.instance.withSerializerModifier(serializerModifier);
-        m.setSerializerFactory(serializerFactory);
+        if (!MAPPERS_ALREADY_INITIALIZED.contains(m)) {
+            SecureLogBeanSerializerModifier serializerModifier = new SecureLogBeanSerializerModifier();
+            SerializerFactory serializerFactory = BeanSerializerFactory.instance.withSerializerModifier(serializerModifier);
+            m.setSerializerFactory(serializerFactory);
+            MAPPERS_ALREADY_INITIALIZED.add(m);
+        }
+
         return m;
     }
 
@@ -73,7 +81,7 @@ public class SecureJson {
     }
 
     public static String toJson(ObjectMapper mapper, Object bean, boolean prettyPrint, Class<?> view) {
-        ObjectWriter writer = objectWriter(mapper, prettyPrint);
+        ObjectWriter writer = objectWriter(initMapper(mapper), prettyPrint);
         if (view != SecureLog.Default.class) {
             writer = writer.withView(view);
         }
