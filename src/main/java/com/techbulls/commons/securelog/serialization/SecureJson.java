@@ -85,7 +85,7 @@ public class SecureJson {
      * @param bean <b>Object</b> that needs to converted to secure JSON string
      * @return String
      * */
-    public static String toJson(Object bean) throws JsonProcessingException {
+    public static String toJson(Object bean){
         Class<?> cls = bean.getClass();
         SecureLog annotation = cls.getAnnotation(SecureLog.class);
         Class<?> view =null;
@@ -102,7 +102,7 @@ public class SecureJson {
      * @param bean <b>Object</b> that needs to converted to secure JSON string
      * @return String
      * */
-    public static String toJson(Object bean, boolean prettyPrint, Class<?> view) throws JsonProcessingException {
+    public static String toJson(Object bean, boolean prettyPrint, Class<?> view){
         return toJson(mapper(), bean, prettyPrint, view);
     }
 
@@ -110,7 +110,7 @@ public class SecureJson {
      * and return the secure string
      * @param bean <b>Object</b> that needs to converted to secure JSON string
      * @param prettyPrint <b>boolean</b> that needs to converted to secure JSON string
-     * @return Stri
+     * @return String
      * */
     public static String toJson(ObjectMapper mapper, Object bean, boolean prettyPrint, Class<?> view){
         ObjectWriter writer = objectWriter(mapper, prettyPrint);
