@@ -69,6 +69,7 @@ public class SecureJson {
 
     /**This method will set the SerializerFactory configured with SecureLogBeanSerializerModifier to the object mapper
      * In case of new mapper instance it will be added to mapper set (MAPPERS_ALREADY_INITIALIZED)
+     * @param m <b>ObjectMapper<b/> that is to be initialized with secure serializer modifier
      * */
     private static ObjectMapper initMapper(ObjectMapper m) {
         if (!MAPPERS_ALREADY_INITIALIZED.contains(m)) {
@@ -77,7 +78,6 @@ public class SecureJson {
             m.setSerializerFactory(serializerFactory);
             MAPPERS_ALREADY_INITIALIZED.add(m);
         }
-
         return m;
     }
 
