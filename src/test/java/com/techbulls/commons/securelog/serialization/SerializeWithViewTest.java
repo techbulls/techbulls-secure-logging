@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.Setter;
 import org.junit.Test;
@@ -48,6 +49,23 @@ public class SerializeWithViewTest {
         assertNodeDoesNotExist(root, "orderId");
         assertNodeDoesNotExist(root, "status");
 
+
+        ObjectMapper objectMapper=new ObjectMapper();
+        json = SecureJson.toJson(objectMapper,order, false, Views.Input.class);
+
+        System.out.println("Json: " + json);
+
+        root = TestUtils.asJsonNode(json);
+
+        assertContainsNodeWithText(root, "clientOrderId", order.getClientOrderId());
+        assertContainsNodeWithText(root, "amount", order.getAmount().toString());
+        assertContainsNodeWithText(root, "id", order.getId().toString());
+        assertNodeDoesNotExist(root, "orderId");
+        assertNodeDoesNotExist(root, "status");
+
+
+
+
         json = SecureJson.toJson(order, false, Views.Output.class);
 
         System.out.println("Json: " + json);
@@ -59,6 +77,11 @@ public class SerializeWithViewTest {
         assertContainsNodeWithText(root, "orderId", order.getOrderId());
         assertContainsNodeWithText(root, "status", order.getStatus());
         assertContainsNodeWithText(root, "id", order.getId().toString());
+
+
+
+
+
     }
 
     interface Views {

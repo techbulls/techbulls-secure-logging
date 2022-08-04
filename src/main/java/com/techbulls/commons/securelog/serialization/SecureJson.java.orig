@@ -25,9 +25,7 @@ import com.techbulls.commons.securelog.annotation.SecureLog;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashSet;
-import java.util.Set;
-
+<<<<<<< HEAD
 /**
  * <h3>SecureJson Class</h3>
  * This class uses ObjectMapper to write serialized values as per annotations
@@ -41,6 +39,10 @@ import java.util.Set;
  * @version 0.1
  * @since 0.1
  * */
+=======
+import java.util.HashSet;
+import java.util.Set;
+>>>>>>> d7eabe5e92f2ba0b7115c5a122ea099ccf985873
 
 public class SecureJson {
 
@@ -68,7 +70,6 @@ public class SecureJson {
 
 
     /**This method will set the SerializerFactory configured with SecureLogBeanSerializerModifier to the object mapper
-     * In case of new mapper instance it will be added to mapper set (MAPPERS_ALREADY_INITIALIZED)
      * */
     private static ObjectMapper initMapper(ObjectMapper m) {
         if (!MAPPERS_ALREADY_INITIALIZED.contains(m)) {
@@ -88,7 +89,7 @@ public class SecureJson {
      * @return ObjectWriter
      * */
     private static ObjectWriter objectWriter(ObjectMapper mapper, boolean prettyPrint) {
-        return prettyPrint ? mapper.writerWithDefaultPrettyPrinter() : mapper.writer();
+        return prettyPrint ? mapper.writerWithDefaultPrettyPrinter() : mapper().writer();
     }
 
     /**This method accept the bean objects are return the json string with masked values
@@ -116,6 +117,7 @@ public class SecureJson {
         return toJson(mapper(), bean, prettyPrint, view);
     }
 
+<<<<<<< HEAD
     /**This method accepts the bean object, prettyPrint property and Class view
      * and return the secure string
      * @param bean <b>Object</b> that needs to converted to secure JSON string
@@ -123,7 +125,11 @@ public class SecureJson {
      * @return String
      * */
     public static String toJson(ObjectMapper mapper, Object bean, boolean prettyPrint, Class<?> view){
+        ObjectWriter writer = objectWriter(mapper, prettyPrint);
+=======
+    public static String toJson(ObjectMapper mapper, Object bean, boolean prettyPrint, Class<?> view) {
         ObjectWriter writer = objectWriter(initMapper(mapper), prettyPrint);
+>>>>>>> d7eabe5e92f2ba0b7115c5a122ea099ccf985873
         if (view != SecureLog.Default.class) {
             writer = writer.withView(view);
         }

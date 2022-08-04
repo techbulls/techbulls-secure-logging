@@ -1,6 +1,7 @@
 package com.techbulls.commons.securelog.serialization;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techbulls.commons.securelog.annotation.LogSensitive;
 import com.techbulls.commons.securelog.annotation.SecureLog;
 import org.junit.Test;
@@ -24,6 +25,12 @@ public class SecureNestedClassTest {
         String  safeToString = SecureJson.toJson(bean);
         TestUtils.testObject(safeToString,bean,bean.getClass());
         System.out.println("TS01:"+safeToString);
+
+
+        ObjectMapper mapper = new ObjectMapper();
+        safeToString = SecureJson.toJson(mapper,bean,true,null);
+        TestUtils.testObject(safeToString,bean,bean.getClass());
+        System.out.println("TS02:"+safeToString);
 
     }
 

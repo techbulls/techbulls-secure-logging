@@ -3,6 +3,7 @@ package com.techbulls.commons.securelog.serialization;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techbulls.commons.securelog.annotation.LogSensitive;
 import com.techbulls.commons.securelog.annotation.SecureLog;
 import org.junit.Test;
@@ -13,7 +14,7 @@ import static com.techbulls.commons.securelog.serialization.TestUtils.assertCont
 public class SecureVisibilityTest {
 
     @Test
-    public void testSafeToStringWithVisibility() throws JsonProcessingException, IllegalAccessException {
+    public void testSafeToStringWithVisibility() throws JsonProcessingException {
         AnyPojo ap=new AnyPojo();
         ap.protectedData="Protected Data";
         ap.publicData="Public Data";
@@ -26,6 +27,8 @@ public class SecureVisibilityTest {
         assertContainsNodeWithText(root, "publicData", ap.publicData);
         assertContainsNodeWithText(root, "privateData", ap.privateData);
 
+
+
         NonPrivate np=new NonPrivate();
         np.protectedData="Protected Data";
         np.publicData="Public Data";
@@ -37,6 +40,23 @@ public class SecureVisibilityTest {
         assertContainsNodeWithText(root, "protectedData", np.protectedData);
         assertContainsNodeWithText(root, "publicData", "XXXX");
         assertContainsNodeWithoutText(root, "privateData", np.privateData);
+
+        ObjectMapper mapper = new ObjectMapper();
+        json = SecureJson.toJson(mapper,np,false,SecureLog.Default.class);
+        System.out.println("TS03:" + json);
+        root = TestUtils.asJsonNode(json);
+        assertContainsNodeWithText(root, "protectedData", np.protectedData);
+        assertContainsNodeWithText(root, "publicData", "XXXX");
+        assertContainsNodeWithoutText(root, "privateData", np.privateData);
+
+        json = SecureJson.toJson(mapper,np,true,SecureLog.Default.class);
+        System.out.println("TS04:" + json);
+        root = TestUtils.asJsonNode(json);
+        assertContainsNodeWithText(root, "protectedData", np.protectedData);
+        assertContainsNodeWithText(root, "publicData", "XXXX");
+        assertContainsNodeWithoutText(root, "privateData", np.privateData);
+
+
 
     }
 

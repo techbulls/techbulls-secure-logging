@@ -27,9 +27,30 @@
     <description>A library with annotations to help converting objects to JSONs omitting sensitive data</description>
     <url>https://github.com/techbulls/techbulls-secure-logging</url>
     <scm>
-        <connection>git@github.com:techbulls/techbulls-secure-logging.git</connection>
-        <developerConnection>scm:git@github.com:techbulls/techbulls-secure-logging.git</developerConnection>
+        <connection>scm:git:git@github.com:techbulls/techbulls-secure-logging.git</connection>
+        <developerConnection>scm:git:ssh://github.com:techbulls/techbulls-secure-logging.git</developerConnection>
+        <url>https://github.com/techbulls/techbulls-secure-logging</url>
     </scm>
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <name>Kalpak Gadre</name>
+            <email>kalpak.gadre@techbulls.com</email>
+            <organization>TechBulls SoftTech</organization>
+            <organizationUrl>https://techbulls.com</organizationUrl>
+        </developer>
+        <developer>
+            <name>Vaibhav Ghatge</name>
+            <email>vaibhav.ghatge@techbulls.com</email>
+            <organization>TechBulls SoftTech</organization>
+            <organizationUrl>https://techbulls.com</organizationUrl>
+        </developer>
+    </developers>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -65,5 +86,40 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.2.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
 
