@@ -30,13 +30,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SecureLog {
-    /**
-     * Enables pretty json output.
+    /**Enables pretty json output.
      * */
     boolean pretty() default false;
 
-    /**
-     * A JsonView to be used when converting to json. If not provided, does not use a specific view.
+    /**A JsonView to be used when converting to json. If not provided, does not use a specific view.
      * */
     Class<?> view() default Default.class;
 
