@@ -3,11 +3,11 @@ This library allows you to log information in secure fashion. It protects sensit
 
 For example: consider a request model class `LoginRequest` with attributes `username` and `password`. In your login REST API, you log the jsonified request. In case the request came with username as `john.doe@domain.com` and password as `secret123` it will end up logging the request like:
 ```
-Login request: {"username": "john.doe@domain.com", password="secret123"}
+Login request: {"username": "john.doe@domain.com", "password"="secret123"}
 ```
 Note that the password here was printed in the plain text format. The library will allow you to create an output like below instead:
 ```
-Login request: {"username": "john.doe@domain.com", password="xxxxxxx"}
+Login request: {"username": "john.doe@domain.com", "password"="xxxxxxx"}
 ```
 
 The library provides a simple utility methods to convert given object to JSON honoring the secure logging annotations to mask the sensitive data. We ecnourage you to implement a `toString` method on your model class so that any accidental logging in log will lead to maked data being logged.
