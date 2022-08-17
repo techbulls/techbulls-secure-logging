@@ -42,7 +42,7 @@ public @interface LogSensitive {
     Class<? extends ValueFormatter> formatter() default DefaultValueFormatter.class;
 
     /**
-     * Boolean to specify if null values are to be masked | <b>Default false<b/>
+     * Boolean to specify if null values are to be masked | <b>Default false</b>
      * */
     boolean secureNullValues() default false;
 }
