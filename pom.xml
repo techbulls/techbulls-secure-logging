@@ -19,7 +19,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.techbulls.commons.securelog</groupId>
     <artifactId>techbulls-secure-logging</artifactId>
-    <version>0.1</version>
+    <version>0.1-SNAPSHOT</version>
     <name>techbulls secure logging</name>
     <packaging>jar</packaging>
     <description>A library with annotations to help converting objects to JSONs omitting sensitive data</description>
@@ -28,8 +28,7 @@
         <connection>scm:git:git@github.com/techbulls/techbulls-secure-logging.git</connection>
         <developerConnection>scm:git:ssh://github.com:techbulls/techbulls-secure-logging.git</developerConnection>
         <url>https://github.com/techbulls/techbulls-secure-logging</url>
-      <tag>0.1</tag>
-  </scm>
+    </scm>
     <licenses>
         <license>
             <name>The Apache License, Version 2.0</name>
