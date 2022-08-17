@@ -26,7 +26,7 @@
     <url>https://github.com/techbulls/techbulls-secure-logging</url>
     <scm>
         <connection>scm:git:git@github.com/techbulls/techbulls-secure-logging.git</connection>
-        <developerConnection>scm:git:git://github.com:techbulls/techbulls-secure-logging.git</developerConnection>
+        <developerConnection>scm:git:git@github.com:techbulls/techbulls-secure-logging.git</developerConnection>
         <url>https://github.com/techbulls/techbulls-secure-logging</url>
     </scm>
     <licenses>
