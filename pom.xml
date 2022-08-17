@@ -15,12 +15,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.techbulls.commons.securelog</groupId>
     <artifactId>techbulls-secure-logging</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.1</version>
     <name>techbulls secure logging</name>
     <packaging>jar</packaging>
     <description>A library with annotations to help converting objects to JSONs omitting sensitive data</description>
@@ -29,7 +28,8 @@
         <connection>scm:git:git@github.com:techbulls/techbulls-secure-logging.git</connection>
         <developerConnection>scm:git:ssh://github.com:techbulls/techbulls-secure-logging.git</developerConnection>
         <url>https://github.com/techbulls/techbulls-secure-logging</url>
-    </scm>
+      <tag>0.1</tag>
+  </scm>
     <licenses>
         <license>
             <name>The Apache License, Version 2.0</name>
