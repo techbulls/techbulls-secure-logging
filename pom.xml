@@ -25,8 +25,8 @@
     <description>A library with annotations to help converting objects to JSONs omitting sensitive data</description>
     <url>https://github.com/techbulls/techbulls-secure-logging</url>
     <scm>
-        <connection>scm:git:git@github.com:techbulls/techbulls-secure-logging.git</connection>
-        <developerConnection>scm:git:ssh://github.com:techbulls/techbulls-secure-logging.git</developerConnection>
+        <connection>scm:git:git@github.com/techbulls/techbulls-secure-logging.git</connection>
+        <developerConnection>scm:git:ssh://github.com/techbulls/techbulls-secure-logging.git</developerConnection>
         <url>https://github.com/techbulls/techbulls-secure-logging</url>
       <tag>0.1</tag>
   </scm>
