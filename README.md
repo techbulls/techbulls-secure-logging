@@ -1,132 +1,614 @@
-# techbulls secure logging 
-This library allows you to log information in secure fashion. It protects sensitive information from being logged in the log file by masking the output of such information. The library relies on declarative style using annotation to mark fields which are sensitive and should not be logged as-is in the log. Options are provided to customize the masked output using custom logic.
+<!--
+LLM-CONTEXT
+library: techbulls-secure-logging
+language: Java 8+
+package: com.techbulls.commons.securelog
+maven-group: com.techbulls.commons.securelog
+maven-artifact: techbulls-secure-logging
+dependency: jackson-databind 2.15+
+license: Apache-2.0
+annotations: @SecureLog (class-level), @LogSensitive (field-level)
+entry-point: SecureJson.toJson(Object bean)
+interface: ValueFormatter { String format(Object value, String secureValue) }
+default-mask: "XXXX"
+purpose: Mask sensitive fields during JSON serialization for safe logging
+-->
 
-For example: consider a request model class `LoginRequest` with attributes `username` and `password`. In your login REST API, you log the jsonified request. In case the request came with username as `john.doe@domain.com` and password as `secret123` it will end up logging the request like:
+# TechBulls Secure Logging
+
+A Java library that masks sensitive field values during JSON serialization for safe logging. Uses an annotation-based approach with Jackson integration to prevent sensitive data (passwords, emails, tokens) from appearing in plain text in log files.
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Annotations](#annotations)
+  - [@SecureLog](#securelog)
+  - [@LogSensitive](#logsensitive)
+- [API Reference](#api-reference)
+- [Custom ValueFormatter](#custom-valueformatter)
+- [Examples](#examples)
+  - [Basic Masking](#basic-masking)
+  - [Custom Formatters](#custom-formatters)
+  - [Securing Null Values](#securing-null-values)
+  - [Collections and Maps](#collections-and-maps)
+  - [Nested Objects](#nested-objects)
+  - [Pretty Printing](#pretty-printing)
+- [Jackson Integration](#jackson-integration)
+- [Custom ObjectMapper](#custom-objectmapper)
+- [Implementing toString](#implementing-tostring)
+- [Thread Safety](#thread-safety)
+- [Requirements](#requirements)
+
+## Installation
+
+### Maven
+
+```xml
+<dependency>
+    <groupId>com.techbulls.commons.securelog</groupId>
+    <artifactId>techbulls-secure-logging</artifactId>
+    <version>0.1</version>
+</dependency>
 ```
-Login request: {"username": "john.doe@domain.com", "password"="secret123"}
+
+### Gradle
+
+```groovy
+implementation 'com.techbulls.commons.securelog:techbulls-secure-logging:0.1'
 ```
-Note that the password here was printed in the plain text format. The library will allow you to create an output like below instead:
+
+## Quick Start
+
+**Without** secure logging:
 ```
-Login request: {"username": "john.doe@domain.com", "password"="xxxxxxx"}
+Login request: {"username": "john.doe@domain.com", "password": "secret123"}
 ```
 
-The library provides a simple utility methods to convert given object to JSON honoring the secure logging annotations to mask the sensitive data. We ecnourage you to implement a `toString` method on your model class so that any accidental logging in log will lead to maked data being logged.
+**With** secure logging:
+```
+Login request: {"username": "john.doe@domain.com", "password": "XXXX"}
+```
 
-# Annotations
+Three steps to get started:
 
-## @SecureLog
-You can annotate a model class with @SecureLog annotation. The annotation provides following attributes,
-- *pretty* - Makes the json output of the object to be pretty
-- *view* - In case you are using `@JsonView`, you can control what view will be used when generating the secure json output.
-
-## @LogSensitive
-Any field that should not be logged as is in the log should be annotated as `@LogSensitive` The secure json output will ensure that the fields marked as sensitive will be masked in the generated output. The annotation provides following attributes,
-- *value* - An alternative value that should be printed for the given field. The default is `XXXX`
-- *formatter* - Allows you to control masking of the sensitive value by providing a custom `ValueFormatter` which can control how to mask a value before it is getting logged.
-- *secureNullValues* - Allows securing the `null` values. If set to `true` the masked value will be used instead of the `null` value.
-
-# Example
 ```java
-public class SafeLogging {
-    @SecureLog
-    public static class UserInfo {
+import com.techbulls.commons.securelog.annotation.SecureLog;
+import com.techbulls.commons.securelog.annotation.LogSensitive;
+import com.techbulls.commons.securelog.serialization.SecureJson;
 
-        @LogSensitive(value = "XXXXX XXXXX")
-        private String name;
+// 1. Annotate the class with @SecureLog
+@SecureLog
+public class LoginRequest {
 
-        @LogSensitive(formatter = EmailFormatter.class)
-        private String email;
+    private String username;
 
-        @LogSensitive(formatter = MobileFormatter.class)
-        private String mobile;
+    // 2. Annotate sensitive fields with @LogSensitive
+    @LogSensitive
+    private String password;
 
-        @JsonProperty("member_id")
-        private String memberId;
+    // getters and setters...
 
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getEmail() {
-            return email;
-        }
-
-        public void setEmail(String email) {
-            this.email = email;
-        }
-
-        public String getMobile() {
-            return mobile;
-        }
-
-        public void setMobile(String mobile) {
-            this.mobile = mobile;
-        }
-
-        public String getMemberId() {
-            return memberId;
-        }
-
-        public void setMemberId(String memberId) {
-            this.memberId = memberId;
-        }
-
-        @Override
-        public String toString() {
-            return SecureJson.toJson(this);
-        }
-    }
-
-    private static class EmailFormatter implements ValueFormatter {
-        @Override
-        public String format(Object value, String secureValue) {
-            return value.toString().replaceAll("[A-Za-z0-9\\_\\-\\.]+@", "xxxxxx@");
-        }
-    }
-
-    private static class MobileFormatter implements ValueFormatter {
-        @Override
-        public String format(Object value, String secureValue) {
-            String mobile = value.toString();
-            if (mobile.length() <= 2) {
-                return mobile;
-            }
-
-            return "XXXXXXX" + mobile.substring(mobile.length() - 2);
-        }
-    }
-
-    public static void main(String[] args) {
-        UserInfo user = new UserInfo();
-        user.setName("John Doe");
-        user.setEmail("john.doe@gmail.com");
-        user.setMobile("9876543210");
-        user.setMemberId("100001");
-
-        System.out.println("User: " + user);
+    // 3. Override toString to delegate to SecureJson
+    @Override
+    public String toString() {
+        return SecureJson.toJson(this);
     }
 }
 ```
 
-The above code prints following output:
+Now any logging of this object masks the password automatically:
+
+```java
+LoginRequest req = new LoginRequest();
+req.setUsername("john.doe@domain.com");
+req.setPassword("secret123");
+
+log.info("Login request: {}", req);
+// Output: Login request: {"username":"john.doe@domain.com","password":"XXXX"}
 ```
-User: {"name":"XXXXX XXXXX","email":"xxxxxx@gmail.com","mobile":"XXXXXXX10","member_id":"100001"}
+
+## Annotations
+
+### @SecureLog
+
+Class-level annotation that configures secure JSON serialization for the annotated class.
+
+```java
+@SecureLog
+@SecureLog(pretty = true)
+@SecureLog(view = MyView.class)
 ```
 
-# Implementing `toString`
-We encourage you to implement a toString method for your class and simply call `SecureJson.toJson()` method to convert your object to the safe json. This mehtod ensures that you do not have to rely on developers to explicitly use the utility method to create a secure json and any accidental login will be secure output by default.
+| Attribute | Type       | Default              | Description                                                  |
+|-----------|------------|----------------------|--------------------------------------------------------------|
+| `pretty`  | `boolean`  | `false`              | Enable pretty-printed (indented) JSON output                 |
+| `view`    | `Class<?>` | `SecureLog.Default.class` | Jackson `@JsonView` class to apply during serialization |
 
-# Integration with Lombok
-The original intention of this project was to integrate this functionality with Lombok. Lombok operates primarily at the compile time so this was not fitting the Lombok use case. Second option was to inject `toString` automatically like Lombok does but since it's way more complicated, currently we the plan is on relying on simply writing the `toString` manually.
+### @LogSensitive
 
-The annotations can simply still be used in combination with Lombok but you cannot rely on the default `toString` of Lombok for masking of the output data. Also the output is in a Lombok specific format and not a JSON. If you annotate your class with `@Data` of Lombok then you need to ensure you have your own `toString` implementation otherwise Lombok will generate it's own. Using `@ToString` of Lombok on any class that needs masked output does make any sense and should not be done.
+Field-level annotation that marks a field as sensitive. The field value will be masked in the secure JSON output.
 
-# Jackson Annotations
-Note that since this libraty uses Jackson to generate output, all the annotations and rules of Jackson will follow. For example if you want to rename the name of the property in the output, you can use `@JsonProperty` annotation. `@JsonIgnore` can be used to exclude a field from the output. 
+```java
+@LogSensitive                                          // masks with "XXXX"
+@LogSensitive(value = "***")                           // masks with "***"
+@LogSensitive(formatter = EmailFormatter.class)        // custom masking logic
+@LogSensitive(secureNullValues = true)                 // masks null values too
+```
 
-# Providing your own `ObjectMapper`
-The `SecureJson` class has number of overloaded `toJson` methods. One of the methods accepts an `ObjectMapper` that will be used instead an internal one while generating the json output. The library will add some configuration to the mapper given by you, but you will be able to customize other Jackson configuration at the mapper level. Note that using any other variation of `toJson` apart from the single argument one will ignore properties at the `@SecureLog` annotation level and simply override with what is provided as parameter to the methods.
+| Attribute          | Type                              | Default                       | Description                                                        |
+|--------------------|-----------------------------------|-------------------------------|--------------------------------------------------------------------|
+| `value`            | `String`                          | `"XXXX"`                      | The mask string used to replace the field value                    |
+| `formatter`        | `Class<? extends ValueFormatter>` | `DefaultValueFormatter.class` | Custom formatter class for advanced masking logic                  |
+| `secureNullValues` | `boolean`                         | `false`                       | If `true`, null values are masked with the `value` string instead of appearing as `null` |
+
+## API Reference
+
+The `SecureJson` class is the public entry point. All methods are static and thread-safe.
+
+### `SecureJson.toJson(Object bean)`
+
+Converts the object to a secure JSON string. Reads `@SecureLog` annotation from the class to determine `pretty` and `view` settings.
+
+```java
+String json = SecureJson.toJson(myObject);
+```
+
+### `SecureJson.toJson(Object bean, boolean prettyPrint, Class<?> view)`
+
+Converts the object with explicit pretty-print and view settings. These override the `@SecureLog` annotation values.
+
+```java
+// Pretty print, no view filtering
+String json = SecureJson.toJson(myObject, true, null);
+
+// With a specific JsonView
+String json = SecureJson.toJson(myObject, false, PublicView.class);
+```
+
+### `SecureJson.toJson(ObjectMapper mapper, Object bean, boolean prettyPrint, Class<?> view)`
+
+Uses a custom `ObjectMapper` instance. The library adds its secure serializer modifier to the mapper on first use. Useful when you need custom Jackson configuration (e.g., `@JsonFilter`).
+
+```java
+ObjectMapper customMapper = new ObjectMapper();
+// configure customMapper as needed...
+String json = SecureJson.toJson(customMapper, myObject, false, null);
+```
+
+## Custom ValueFormatter
+
+Implement the `ValueFormatter` interface to define custom masking logic. The formatter must have a no-arg constructor.
+
+```java
+import com.techbulls.commons.securelog.ValueFormatter;
+
+public interface ValueFormatter {
+    /**
+     * @param value       the actual field value
+     * @param secureValue the mask string from @LogSensitive.value()
+     * @return the masked string to use in the JSON output
+     */
+    String format(Object value, String secureValue);
+}
+```
+
+**Default behavior:** The built-in `DefaultValueFormatter` simply returns `secureValue`, ignoring the actual value entirely.
+
+### Example: Email Formatter
+
+Masks the local part of an email address while preserving the domain:
+
+```java
+public class EmailFormatter implements ValueFormatter {
+    @Override
+    public String format(Object value, String secureValue) {
+        return value.toString().replaceAll("[A-Za-z0-9_\\-\\.]+@", "xxxxxx@");
+    }
+}
+
+// Usage:
+@LogSensitive(formatter = EmailFormatter.class)
+private String email;
+
+// "john.doe@gmail.com" → "xxxxxx@gmail.com"
+```
+
+### Example: Mobile Formatter
+
+Shows only the last 2 digits of a phone number:
+
+```java
+public class MobileFormatter implements ValueFormatter {
+    @Override
+    public String format(Object value, String secureValue) {
+        String mobile = value.toString();
+        if (mobile.length() <= 2) {
+            return mobile;
+        }
+        return "XXXXXXX" + mobile.substring(mobile.length() - 2);
+    }
+}
+
+// Usage:
+@LogSensitive(formatter = MobileFormatter.class)
+private String mobile;
+
+// "9876543210" → "XXXXXXX10"
+```
+
+## Examples
+
+### Basic Masking
+
+```java
+import com.techbulls.commons.securelog.annotation.SecureLog;
+import com.techbulls.commons.securelog.annotation.LogSensitive;
+import com.techbulls.commons.securelog.serialization.SecureJson;
+
+@SecureLog
+public class UserInfo {
+
+    @LogSensitive(value = "XXXXX XXXXX")
+    private String name;
+
+    @LogSensitive(formatter = EmailFormatter.class)
+    private String email;
+
+    @LogSensitive(formatter = MobileFormatter.class)
+    private String mobile;
+
+    @JsonProperty("member_id")
+    private String memberId;
+
+    // getters and setters...
+
+    @Override
+    public String toString() {
+        return SecureJson.toJson(this);
+    }
+}
+```
+
+```java
+UserInfo user = new UserInfo();
+user.setName("John Doe");
+user.setEmail("john.doe@gmail.com");
+user.setMobile("9876543210");
+user.setMemberId("100001");
+
+System.out.println("User: " + user);
+// Output: User: {"name":"XXXXX XXXXX","email":"xxxxxx@gmail.com","mobile":"XXXXXXX10","member_id":"100001"}
+```
+
+### Custom Formatters
+
+You can build any masking strategy by implementing `ValueFormatter`:
+
+```java
+// Mask all uppercase letters
+public class UpperCaseFormatter implements ValueFormatter {
+    @Override
+    public String format(Object value, String secureValue) {
+        return value.toString().replaceAll("[A-Z]", "X");
+    }
+}
+
+// Show first character, mask the rest
+public class FirstCharFormatter implements ValueFormatter {
+    @Override
+    public String format(Object value, String secureValue) {
+        String str = value.toString();
+        if (str.length() <= 1) return str;
+        return str.charAt(0) + "XXXX";
+    }
+}
+```
+
+### Securing Null Values
+
+By default, null fields are serialized as `null` in JSON even if annotated with `@LogSensitive`. Use `secureNullValues = true` to mask them:
+
+```java
+@SecureLog
+public class Payment {
+
+    @LogSensitive(secureNullValues = true)
+    private String cardNumber;
+
+    @LogSensitive
+    private String cvv;
+
+    // getters and setters...
+
+    @Override
+    public String toString() {
+        return SecureJson.toJson(this);
+    }
+}
+```
+
+```java
+Payment payment = new Payment();
+// both fields are null
+
+System.out.println(payment);
+// Output: {"cardNumber":"XXXX","cvv":null}
+//          ^^ masked null       ^^ null preserved (secureNullValues = false)
+```
+
+### Collections and Maps
+
+Fields typed as `List`, `Set`, `Queue`, or `Map` can be annotated with `@LogSensitive`. The entire collection is replaced with the mask string:
+
+```java
+@SecureLog
+public class UserProfile {
+
+    @LogSensitive(value = "####")
+    private List<String> phoneNumbers;
+
+    @LogSensitive(value = "####")
+    private Map<String, String> secrets;
+
+    // getters and setters...
+
+    @Override
+    public String toString() {
+        return SecureJson.toJson(this);
+    }
+}
+```
+
+```java
+UserProfile profile = new UserProfile();
+profile.setPhoneNumbers(Arrays.asList("111-222-3333", "444-555-6666"));
+profile.setSecrets(Map.of("ssn", "123-45-6789"));
+
+System.out.println(profile);
+// Output: {"phoneNumbers":"####","secrets":"####"}
+```
+
+### Nested Objects
+
+Secure logging works with nested object hierarchies. Inner objects with their own `@SecureLog` and `@LogSensitive` annotations are handled correctly:
+
+```java
+@SecureLog
+public class Order {
+
+    private String orderId;
+
+    @LogSensitive
+    private String promoCode;
+
+    private PaymentInfo payment;
+
+    // getters and setters...
+
+    @Override
+    public String toString() {
+        return SecureJson.toJson(this);
+    }
+}
+
+@SecureLog
+public class PaymentInfo {
+
+    @LogSensitive
+    private String cardNumber;
+
+    private String currency;
+
+    // getters and setters...
+}
+```
+
+```java
+Order order = new Order();
+order.setOrderId("ORD-123");
+order.setPromoCode("SAVE50");
+
+PaymentInfo payment = new PaymentInfo();
+payment.setCardNumber("4111-1111-1111-1111");
+payment.setCurrency("USD");
+order.setPayment(payment);
+
+System.out.println(order);
+// Output: {"orderId":"ORD-123","promoCode":"XXXX","payment":{"cardNumber":"XXXX","currency":"USD"}}
+```
+
+### Pretty Printing
+
+Enable indented JSON output using the `@SecureLog` annotation or the `toJson` method parameter:
+
+```java
+// Via annotation
+@SecureLog(pretty = true)
+public class Config {
+    @LogSensitive
+    private String apiKey;
+    private String endpoint;
+
+    // getters and setters...
+
+    @Override
+    public String toString() {
+        return SecureJson.toJson(this);
+    }
+}
+
+// Or via method parameter (overrides annotation)
+String json = SecureJson.toJson(myObject, true, null);
+```
+
+Output:
+```json
+{
+  "apiKey" : "XXXX",
+  "endpoint" : "https://api.example.com"
+}
+```
+
+## Jackson Integration
+
+Since this library uses Jackson for JSON serialization, all standard Jackson annotations are supported:
+
+| Annotation         | Effect                                                    |
+|--------------------|-----------------------------------------------------------|
+| `@JsonProperty`    | Rename a field in the JSON output                         |
+| `@JsonIgnore`      | Exclude a field from the JSON output entirely             |
+| `@JsonView`        | Control which fields appear based on a view class         |
+| `@JsonFilter`      | Apply dynamic property filtering via `SimpleBeanPropertyFilter` |
+| `@JsonAutoDetect`  | Control field visibility (e.g., include/exclude private fields) |
+
+### @JsonView Example
+
+```java
+public class Views {
+    public static class Public {}
+    public static class Internal extends Public {}
+}
+
+@SecureLog(view = Views.Public.class)
+public class User {
+
+    @JsonView(Views.Public.class)
+    private String username;
+
+    @JsonView(Views.Internal.class)
+    @LogSensitive
+    private String ssn;
+
+    // getters and setters...
+
+    @Override
+    public String toString() {
+        return SecureJson.toJson(this);
+    }
+}
+```
+
+```java
+// With Public view: ssn is excluded entirely (not part of the view)
+System.out.println(user);
+// Output: {"username":"johndoe"}
+
+// With Internal view: ssn is included but masked
+String json = SecureJson.toJson(user, false, Views.Internal.class);
+// Output: {"username":"johndoe","ssn":"XXXX"}
+```
+
+### @JsonFilter Example
+
+```java
+@JsonFilter("myFilter")
+@SecureLog
+public class FilteredUser {
+
+    private String name;
+
+    @LogSensitive
+    private String email;
+
+    private String role;
+
+    // getters and setters...
+}
+```
+
+```java
+ObjectMapper mapper = new ObjectMapper();
+SimpleFilterProvider filters = new SimpleFilterProvider();
+filters.addFilter("myFilter",
+    SimpleBeanPropertyFilter.filterOutAllExcept("name", "email"));
+mapper.setFilterProvider(filters);
+
+String json = SecureJson.toJson(mapper, user, false, null);
+// Output: {"name":"John","email":"XXXX"}
+// "role" is filtered out, "email" is masked
+```
+
+### @JsonAutoDetect Example
+
+```java
+@SecureLog
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
+public class InternalData {
+
+    @LogSensitive
+    private String secret;  // included because visibility = ANY
+
+    private String label;
+
+    // no getters needed — fields are accessed directly
+}
+```
+
+## Custom ObjectMapper
+
+The `SecureJson.toJson(ObjectMapper, Object, boolean, Class<?>)` overload accepts a custom `ObjectMapper`. The library adds its secure serializer modifier to the mapper on first use and tracks it to avoid re-initialization:
+
+```java
+ObjectMapper mapper = new ObjectMapper();
+mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+// add any custom Jackson configuration...
+
+String json = SecureJson.toJson(mapper, myObject, false, null);
+```
+
+**Note:** When using any `toJson` overload other than `toJson(Object)`, the `prettyPrint` and `view` parameters override the values from the `@SecureLog` annotation.
+
+## Implementing toString
+
+We encourage you to implement a `toString` method on your model class that delegates to `SecureJson.toJson(this)`. This ensures that any accidental logging will produce masked output by default, without requiring developers to explicitly call the utility method.
+
+```java
+@SecureLog
+public class MyModel {
+
+    @LogSensitive
+    private String sensitiveField;
+
+    @Override
+    public String toString() {
+        return SecureJson.toJson(this);
+    }
+}
+```
+
+### Integration with Lombok
+
+The annotations work alongside Lombok, but you **cannot** rely on Lombok's `@ToString` for masked output — Lombok generates its own format, not JSON, and does not invoke `SecureJson`.
+
+If you use `@Data`, you **must** provide your own `toString()` to override Lombok's generated one:
+
+```java
+@Data
+@SecureLog
+public class MyModel {
+
+    @LogSensitive
+    private String password;
+
+    private String username;
+
+    // Override Lombok's generated toString
+    @Override
+    public String toString() {
+        return SecureJson.toJson(this);
+    }
+}
+```
+
+Do **not** use `@ToString` from Lombok on any class that requires masked output.
+
+## Thread Safety
+
+`SecureJson` is thread-safe. The internal `ObjectMapper` is initialized using a double-checked locking pattern, and custom `ObjectMapper` instances are tracked in a `Set` to avoid duplicate initialization. Safe to call `SecureJson.toJson()` concurrently from multiple threads.
+
+## Requirements
+
+- **Java:** 8 or higher
+- **Jackson:** jackson-databind 2.15.0 or compatible
+- **License:** Apache License 2.0

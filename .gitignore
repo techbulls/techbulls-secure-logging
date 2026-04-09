@@ -29,3 +29,6 @@ IntelliJ IDEA sepecific files
 # Maven Files
 target
 
+# Visual Studi Code files
+.vscode
+
