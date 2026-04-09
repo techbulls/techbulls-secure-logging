@@ -57,7 +57,7 @@ import java.lang.annotation.Target;
  * @version 0.1
  * @since 0.1
  */
-@Target({ElementType.FIELD})
+@Target({ElementType.FIELD, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface LogSensitive {
 

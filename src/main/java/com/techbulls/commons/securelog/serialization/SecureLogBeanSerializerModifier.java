@@ -22,6 +22,10 @@ import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 import com.techbulls.commons.securelog.annotation.LogSensitive;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.List;
 
 /**
@@ -73,7 +77,7 @@ final class SecureLogBeanSerializerModifier extends BeanSerializerModifier {
     @Override
     public List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription beanDesc, List<BeanPropertyWriter> beanProperties) {
         for (BeanPropertyWriter writer : beanProperties) {
-            LogSensitive annotation = writer.getAnnotation(LogSensitive.class);
+            LogSensitive annotation = findLogSensitive(writer);
             if (annotation != null) {
                 JsonSerializer<Object> delegate = writer.getSerializer();
                 SecurePropertySerializer<Object> serializer = new SecurePropertySerializer<>(delegate, annotation);
@@ -86,6 +90,51 @@ final class SecureLogBeanSerializerModifier extends BeanSerializerModifier {
             }
         }
         return beanProperties;
+    }
+
+    /**
+     * Resolves the {@link LogSensitive} annotation for a bean property, supporting both direct
+     * annotation and meta-annotation (an annotation that is itself annotated with {@link LogSensitive}).
+     * <p>
+     * Direct annotations take precedence over meta-annotations. Only a single level of
+     * meta-annotation lookup is performed.
+     *
+     * @param writer the bean property writer to inspect
+     * @return the resolved {@link LogSensitive} annotation, or {@code null} if not found
+     */
+    private static LogSensitive findLogSensitive(BeanPropertyWriter writer) {
+        LogSensitive direct = writer.getAnnotation(LogSensitive.class);
+        if (direct != null) {
+            return direct;
+        }
+
+        AnnotatedElement element = writer.getMember().getAnnotated();
+        LogSensitive meta = findMetaLogSensitive(element);
+        if (meta != null) {
+            return meta;
+        }
+
+        // If the member is a getter method, also check the corresponding field
+        if (element instanceof Method) {
+            try {
+                Field field = ((Method) element).getDeclaringClass().getDeclaredField(writer.getName());
+                return findMetaLogSensitive(field);
+            } catch (NoSuchFieldException e) {
+                // No matching field, property may be getter-only
+            }
+        }
+
+        return null;
+    }
+
+    private static LogSensitive findMetaLogSensitive(AnnotatedElement element) {
+        for (Annotation ann : element.getAnnotations()) {
+            LogSensitive meta = ann.annotationType().getAnnotation(LogSensitive.class);
+            if (meta != null) {
+                return meta;
+            }
+        }
+        return null;
     }
 
 }

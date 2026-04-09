@@ -7,11 +7,13 @@ maven-group: com.techbulls.commons.securelog
 maven-artifact: techbulls-secure-logging
 dependency: jackson-databind 2.15+
 license: Apache-2.0
-annotations: @SecureLog (class-level), @LogSensitive (field-level)
+annotations: @SecureLog (class-level), @LogSensitive (field-level), @CardNumber (field-level), @Email (field-level)
 annotation-processor: SecureLogProcessor (compile-time toString() check)
 entry-point: SecureJson.toJson(Object bean)
 interface: ValueFormatter { String format(Object value, String secureValue) }
+built-in-formatters: CardNumberFormatter, EmailFormatter, LastNCharsFormatter, FirstNCharsFormatter
 default-mask: "XXXX"
+meta-annotation: @LogSensitive can be placed on custom annotations for reusable masking strategies
 purpose: Mask sensitive fields during JSON serialization for safe logging
 -->
 
@@ -29,8 +31,12 @@ A Java library that masks sensitive field values during JSON serialization for s
 - [Annotations](#annotations)
   - [@SecureLog](#securelog)
   - [@LogSensitive](#logsensitive)
+  - [@CardNumber](#cardnumber)
+  - [@Email](#email)
+- [Built-in Formatters](#built-in-formatters)
 - [API Reference](#api-reference)
 - [Custom ValueFormatter](#custom-valueformatter)
+- [Custom Meta-Annotations](#custom-meta-annotations)
 - [Examples](#examples)
   - [Basic Masking](#basic-masking)
   - [Custom Formatters](#custom-formatters)
@@ -80,14 +86,15 @@ Three steps to get started:
 ```java
 import com.techbulls.commons.securelog.annotation.SecureLog;
 import com.techbulls.commons.securelog.annotation.LogSensitive;
+import com.techbulls.commons.securelog.annotation.CardNumber;
 import com.techbulls.commons.securelog.serialization.SecureJson;
 
 // 1. Annotate the class with @SecureLog
 @SecureLog
 public class PaymentRequest {
 
-    // 2. Annotate sensitive fields with @LogSensitive
-    @LogSensitive(formatter = CardNumberFormatter.class)
+    // 2. Annotate sensitive fields — use built-in annotations or @LogSensitive
+    @CardNumber
     private String cardNumber;
 
     @LogSensitive
@@ -154,6 +161,52 @@ Field-level annotation that marks a field as sensitive. The field value will be 
 | `formatter`        | `Class<? extends ValueFormatter>` | `DefaultValueFormatter.class` | Custom formatter class for advanced masking logic                  |
 | `secureNullValues` | `boolean`                         | `false`                       | If `true`, null values are masked with the `value` string instead of appearing as `null` |
 
+### @CardNumber
+
+Field-level convenience annotation that masks card numbers, revealing only the last 4 digits in dash-separated groups of 4. This is a meta-annotation over `@LogSensitive` with `CardNumberFormatter` pre-configured.
+
+```java
+@CardNumber
+private String cardNumber;
+// "4111111111111111" → "XXXX-XXXX-XXXX-1111"
+// "4111-1111-1111-1111" → "XXXX-XXXX-XXXX-1111"
+```
+
+### @Email
+
+Field-level convenience annotation that masks email addresses, revealing only the first character of the local part and the full domain. This is a meta-annotation over `@LogSensitive` with `EmailFormatter` pre-configured.
+
+```java
+@Email
+private String emailAddress;
+// "john.doe@gmail.com" → "j****@gmail.com"
+```
+
+## Built-in Formatters
+
+The `com.techbulls.commons.securelog.formatter` package provides ready-to-use `ValueFormatter` implementations for common masking patterns. Use them directly via `@LogSensitive(formatter = ...)` or through the convenience annotations above.
+
+| Formatter | Masking Strategy | Example |
+|-----------|-----------------|---------|
+| `CardNumberFormatter` | Shows last 4 digits, masks rest with `X`, dash-separated groups of 4 | `"4111111111111111"` → `"XXXX-XXXX-XXXX-1111"` |
+| `EmailFormatter` | Shows first character of local part + `****` + full domain | `"john.doe@gmail.com"` → `"j****@gmail.com"` |
+| `LastNCharsFormatter` | Shows last N characters, masks rest with `*` (N = `secureValue` length) | `"123456789"` with `"XXXX"` → `"*****6789"` |
+| `FirstNCharsFormatter` | Shows first N characters, masks rest with `*` (N = `secureValue` length) | `"123456789"` with `"XXXX"` → `"1234*****"` |
+
+**LastNCharsFormatter / FirstNCharsFormatter convention:** The number of characters to reveal is determined by the length of the `value` attribute in `@LogSensitive`. For example, `"XXXX"` (4 characters) reveals 4 characters:
+
+```java
+@LogSensitive(value = "XXXX", formatter = LastNCharsFormatter.class)
+private String accountNumber;
+// "9876543210" → "******3210" (last 4 revealed)
+
+@LogSensitive(value = "XX", formatter = FirstNCharsFormatter.class)
+private String memberId;
+// "ABCDEF" → "AB****" (first 2 revealed)
+```
+
+If the input value is `null` or shorter than N characters, the `secureValue` string is returned as a fallback.
+
 ## API Reference
 
 The `SecureJson` class is the public entry point. All methods are static and thread-safe.
@@ -209,10 +262,10 @@ public interface ValueFormatter {
 
 ### Example: Email Formatter
 
-Masks the local part of an email address while preserving the domain:
+> **Note:** A built-in `EmailFormatter` is available in `com.techbulls.commons.securelog.formatter` — or use the `@Email` convenience annotation. The example below shows a custom alternative.
 
 ```java
-public class EmailFormatter implements ValueFormatter {
+public class CustomEmailFormatter implements ValueFormatter {
     @Override
     public String format(Object value, String secureValue) {
         if (value == null) return secureValue;
@@ -221,7 +274,7 @@ public class EmailFormatter implements ValueFormatter {
 }
 
 // Usage:
-@LogSensitive(formatter = EmailFormatter.class)
+@LogSensitive(formatter = CustomEmailFormatter.class)
 private String email;
 
 // "john.doe@gmail.com" → "xxxxxx@gmail.com"
@@ -250,6 +303,34 @@ private String mobile;
 
 // "9876543210" → "XXXXXXX10"
 ```
+
+## Custom Meta-Annotations
+
+You can create your own convenience annotations by placing `@LogSensitive` on your annotation definition. The library resolves `@LogSensitive` as a meta-annotation automatically — no additional configuration is needed.
+
+```java
+@Target({ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+@LogSensitive(formatter = MyPanFormatter.class)
+public @interface PanNumber {
+}
+```
+
+```java
+@SecureLog
+public class TaxRecord {
+
+    @PanNumber
+    private String pan;  // uses MyPanFormatter automatically
+
+    @Override
+    public String toString() {
+        return SecureJson.toJson(this);
+    }
+}
+```
+
+**Resolution order:** If a field has both a direct `@LogSensitive` annotation and a meta-annotated annotation, the direct `@LogSensitive` takes precedence.
 
 ## Examples
 
