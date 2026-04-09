@@ -32,3 +32,6 @@ target
 # Visual Studi Code files
 .vscode
 
+# Internal files
+improvements.md
+
