@@ -16,7 +16,7 @@
 package com.techbulls.commons.securelog;
 
 /**
- * <h3>ValueFormatter Interface</h3>
+ * <h2>ValueFormatter Interface</h2>
  * The base interface for formatting sensitive field values during secure JSON serialization.
  * Implementations define how the original field value and the configured mask string are combined
  * to produce the final masked output.

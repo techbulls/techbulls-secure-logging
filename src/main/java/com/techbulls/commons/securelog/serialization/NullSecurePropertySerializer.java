@@ -25,7 +25,7 @@ import java.io.IOException;
 
 
 /**
- * <h3>NullSecurePropertySerializer</h3>
+ * <h2>NullSecurePropertySerializer</h2>
  * A Jackson {@link JsonSerializer} responsible for serializing {@code null} values of fields
  * annotated with {@link LogSensitive} when {@link LogSensitive#secureNullValues()} is set to {@code true}.
  * <p>
@@ -43,7 +43,7 @@ import java.io.IOException;
  * @version 0.1
  * @since 0.1
  */
-public class NullSecurePropertySerializer<T> extends JsonSerializer<T> {
+final class NullSecurePropertySerializer<T> extends JsonSerializer<T> {
 
     /** The formatter used to produce the masked output string from the original value and mask. */
     private final ValueFormatter formatter;
@@ -61,7 +61,7 @@ public class NullSecurePropertySerializer<T> extends JsonSerializer<T> {
      *
      * @param annotation the {@link LogSensitive} annotation present on the field being serialized
      */
-    public NullSecurePropertySerializer(LogSensitive annotation) {
+    NullSecurePropertySerializer(LogSensitive annotation) {
         this.formatter = SecureJson.instantiate(annotation.formatter());
         this.secureValue = annotation.value();
     }

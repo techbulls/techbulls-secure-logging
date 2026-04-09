@@ -25,7 +25,7 @@ import com.techbulls.commons.securelog.annotation.LogSensitive;
 import java.util.List;
 
 /**
- * <h3>SecureLogBeanSerializerModifier</h3>
+ * <h2>SecureLogBeanSerializerModifier</h2>
  * A Jackson {@link BeanSerializerModifier} that intercepts the bean serialization pipeline to detect
  * fields annotated with {@link LogSensitive} and wrap their serializers with masking behavior.
  * <p>
@@ -49,7 +49,11 @@ import java.util.List;
  * @version 0.1
  * @since 0.1
  */
-public class SecureLogBeanSerializerModifier extends BeanSerializerModifier {
+final class SecureLogBeanSerializerModifier extends BeanSerializerModifier {
+
+    /** Creates a new {@code SecureLogBeanSerializerModifier} instance. */
+    SecureLogBeanSerializerModifier() {
+    }
 
     /**
      * Inspects each bean property for the {@link LogSensitive} annotation and, if present,

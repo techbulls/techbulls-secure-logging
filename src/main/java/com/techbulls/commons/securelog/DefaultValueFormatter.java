@@ -16,7 +16,7 @@
 package com.techbulls.commons.securelog;
 
 /**
- * <h3>DefaultValueFormatter Class</h3>
+ * <h2>DefaultValueFormatter Class</h2>
  * The default {@link ValueFormatter} implementation that performs full-replacement masking: the
  * original field value is completely discarded and replaced with the configured mask string.
  * <p>
@@ -35,7 +35,11 @@ package com.techbulls.commons.securelog;
  * @since 0.1
  */
 
-public class DefaultValueFormatter implements ValueFormatter {
+public final class DefaultValueFormatter implements ValueFormatter {
+
+    /** Creates a new {@code DefaultValueFormatter} instance. */
+    public DefaultValueFormatter() {
+    }
 
     /**
      * Returns the mask string unchanged, completely replacing the original value.

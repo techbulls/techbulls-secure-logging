@@ -32,7 +32,7 @@ import java.util.Iterator;
 
 
 /**
- * <h3>SecurePropertySerializer</h3>
+ * <h2>SecurePropertySerializer</h2>
  * A Jackson {@link JsonSerializer} that wraps a delegate serializer and replaces the actual field
  * value with a masked string during JSON serialization. This is the core serializer responsible
  * for enforcing sensitive data masking on fields annotated with {@link LogSensitive}.
@@ -47,7 +47,7 @@ import java.util.Iterator;
  * Instances are created by {@link SecureLogBeanSerializerModifier#changeProperties} and assigned
  * to {@link com.fasterxml.jackson.databind.ser.BeanPropertyWriter} instances for annotated fields.
  *
- * <h4>Example</h4>
+ * <h3>Example</h3>
  * For a field annotated with {@code @LogSensitive("****")}, this serializer will write
  * {@code "****"} (or a custom-formatted value) regardless of the field's actual runtime value.
  *
@@ -59,7 +59,7 @@ import java.util.Iterator;
  * @version 0.1
  * @since 0.1
  */
-public class SecurePropertySerializer<T> extends JsonSerializer<T> {
+final class SecurePropertySerializer<T> extends JsonSerializer<T> {
 
     /**
      * The original serializer for the property, to which non-serialization behavior is delegated.
@@ -85,7 +85,7 @@ public class SecurePropertySerializer<T> extends JsonSerializer<T> {
      *                   the serializer has not yet been resolved by Jackson at the time the modifier runs
      * @param annotation the {@link LogSensitive} annotation present on the field being serialized
      */
-    public SecurePropertySerializer(JsonSerializer<T> delegate, LogSensitive annotation) {
+    SecurePropertySerializer(JsonSerializer<T> delegate, LogSensitive annotation) {
         this.delegate = delegate;
         this.formatter = SecureJson.instantiate(annotation.formatter());
         this.secureValue = annotation.value();

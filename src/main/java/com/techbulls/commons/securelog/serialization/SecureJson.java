@@ -27,7 +27,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.WeakHashMap;
 
 /**
- * <h3>SecureJson Class</h3>
+ * <h2>SecureJson Class</h2>
  * The public API entry point for converting Java objects to JSON strings with sensitive field
  * values masked. This class manages a shared {@link ObjectMapper} configured with the
  * {@link SecureLogBeanSerializerModifier} that detects {@link com.techbulls.commons.securelog.annotation.LogSensitive}
@@ -58,7 +58,6 @@ import java.util.WeakHashMap;
  * are copied (not mutated) and cached in a {@link java.util.WeakHashMap} synchronized on the
  * same mutex. The weak keys ensure that cached copies are eligible for garbage collection when
  * the caller no longer holds a reference to their original mapper.
- * <p>
  * @see com.techbulls.commons.securelog.ValueFormatter
  * @see com.fasterxml.jackson.databind.JsonSerializer
  * @see com.techbulls.commons.securelog.annotation.LogSensitive
@@ -69,7 +68,11 @@ import java.util.WeakHashMap;
  * @since 0.1
  */
 
-public class SecureJson {
+public final class SecureJson {
+
+    /** Utility class — not intended for instantiation. */
+    private SecureJson() {
+    }
 
     /** The shared, lazily initialized {@link ObjectMapper} configured with secure serialization. */
     private static volatile ObjectMapper mapper;

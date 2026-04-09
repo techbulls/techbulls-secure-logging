@@ -22,7 +22,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 /**
- * <h3>LogSensitive Annotation</h3>
+ * <h2>LogSensitive Annotation</h2>
  * A field-level annotation that marks a bean property as containing sensitive data that should be
  * masked when serialized to JSON via {@link com.techbulls.commons.securelog.serialization.SecureJson}.
  * <p>

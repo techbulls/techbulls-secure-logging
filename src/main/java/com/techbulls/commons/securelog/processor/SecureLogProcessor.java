@@ -53,7 +53,11 @@ import java.util.Set;
 @SupportedAnnotationTypes("com.techbulls.commons.securelog.annotation.SecureLog")
 @SupportedSourceVersion(SourceVersion.RELEASE_11)
 @SupportedOptions({"techbulls.securelog.strict"})
-public class SecureLogProcessor extends AbstractProcessor {
+public final class SecureLogProcessor extends AbstractProcessor {
+
+    /** Creates a new {@code SecureLogProcessor} instance. */
+    public SecureLogProcessor() {
+    }
 
     static final String MESSAGE = "Class annotated with @SecureLog does not override toString(). "
             + "Add: @Override public String toString() { return SecureJson.toJson(this); }";

@@ -20,7 +20,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 /**
- * <h3>SecureLog Annotation</h3>
+ * <h2>SecureLog Annotation</h2>
  * A class-level annotation that marks a Java bean for secure JSON serialization via
  * {@link com.techbulls.commons.securelog.serialization.SecureJson}. When present, it provides
  * configuration for how the object should be rendered as a masked JSON string.
@@ -84,6 +84,8 @@ public @interface SecureLog {
      * serialization. When {@code view()} is set to this class, all fields are included in the output.
      */
     class Default {
-
+        /** Creates a new {@code Default} instance. */
+        Default() {
+        }
     }
 }
