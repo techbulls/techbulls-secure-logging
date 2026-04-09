@@ -17,21 +17,37 @@ package com.techbulls.commons.securelog;
 
 /**
  * <h3>DefaultValueFormatter Class</h3>
- * The default value formatter that masks the value with default mask value specified
+ * The default {@link ValueFormatter} implementation that performs full-replacement masking: the
+ * original field value is completely discarded and replaced with the configured mask string.
  * <p>
- * @see com.techbulls.commons.securelog.ValueFormatter
+ * This formatter is used when no custom {@link ValueFormatter} is specified in the
+ * {@link com.techbulls.commons.securelog.annotation.LogSensitive} annotation. For example, a field
+ * annotated with {@code @LogSensitive} (using the default mask {@code "XXXX"}) will always be
+ * serialized as {@code "XXXX"} regardless of its actual value.
+ * <p>
+ * To implement partial masking or other custom strategies, create a class that implements
+ * {@link ValueFormatter} and specify it via
+ * {@link com.techbulls.commons.securelog.annotation.LogSensitive#formatter()}.
+ *
+ * @see ValueFormatter
+ * @see com.techbulls.commons.securelog.annotation.LogSensitive
  * @version 0.1
  * @since 0.1
- * */
+ */
 
 public class DefaultValueFormatter implements ValueFormatter {
 
     /**
-     * This method will return the formatted value
-     * @param value This is the value that needs to be formatted
-     * @param secureValue Default secure masked value specified in the LogSensitive annotation
-     * @return String This is the string value after formatting
-     * */
+     * Returns the mask string unchanged, completely replacing the original value.
+     * <p>
+     * The {@code value} parameter is intentionally ignored — this formatter provides full
+     * replacement masking where no part of the original value is preserved in the output.
+     *
+     * @param value       the original field value (ignored by this implementation)
+     * @param secureValue the mask string specified by the
+     *                    {@link com.techbulls.commons.securelog.annotation.LogSensitive} annotation
+     * @return the {@code secureValue} mask string, unchanged
+     */
     @Override
     public String format(Object value, String secureValue) {
         return secureValue;

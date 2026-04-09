@@ -24,8 +24,49 @@ import com.techbulls.commons.securelog.annotation.LogSensitive;
 
 import java.util.List;
 
+/**
+ * <h3>SecureLogBeanSerializerModifier</h3>
+ * A Jackson {@link BeanSerializerModifier} that intercepts the bean serialization pipeline to detect
+ * fields annotated with {@link LogSensitive} and wrap their serializers with masking behavior.
+ * <p>
+ * During serialization setup, Jackson invokes this modifier for each bean type. For every
+ * {@link com.fasterxml.jackson.databind.ser.BeanPropertyWriter} that carries a {@link LogSensitive}
+ * annotation, this modifier:
+ * <ul>
+ *   <li>Wraps the property's existing serializer with a {@link SecurePropertySerializer} that
+ *       replaces the actual value with the configured mask during serialization.</li>
+ *   <li>If {@link LogSensitive#secureNullValues()} is {@code true}, additionally assigns a
+ *       {@link NullSecurePropertySerializer} to handle {@code null} values for that property.</li>
+ * </ul>
+ * <p>
+ * This modifier is registered with the {@link com.fasterxml.jackson.databind.ObjectMapper} by
+ * {@link SecureJson#initMapper(com.fasterxml.jackson.databind.ObjectMapper)} as part of a custom
+ * {@link com.fasterxml.jackson.databind.ser.SerializerFactory}.
+ *
+ * @see SecurePropertySerializer
+ * @see NullSecurePropertySerializer
+ * @see SecureJson
+ * @see LogSensitive
+ * @version 0.1
+ * @since 0.1
+ */
 public class SecureLogBeanSerializerModifier extends BeanSerializerModifier {
 
+    /**
+     * Inspects each bean property for the {@link LogSensitive} annotation and, if present,
+     * replaces the property's serializer with a {@link SecurePropertySerializer} that masks the value.
+     * <p>
+     * For properties where {@link LogSensitive#secureNullValues()} is {@code true}, a
+     * {@link NullSecurePropertySerializer} is also assigned to ensure that even {@code null} values
+     * are written as the mask string rather than as JSON {@code null}.
+     *
+     * @param config         the active serialization configuration
+     * @param beanDesc       the description of the bean type being serialized
+     * @param beanProperties the list of property writers for the bean; each writer corresponds to
+     *                       one serializable property of the bean
+     * @return the (potentially modified) list of {@link BeanPropertyWriter} instances with secure
+     *         serializers assigned where applicable
+     */
     @Override
     public List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription beanDesc, List<BeanPropertyWriter> beanProperties) {
         for (BeanPropertyWriter writer : beanProperties) {
@@ -44,6 +85,17 @@ public class SecureLogBeanSerializerModifier extends BeanSerializerModifier {
         return beanProperties;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This implementation delegates to the superclass without modification. It is overridden here
+     * as an extension point for potential future customization of the bean-level serializer.
+     *
+     * @param config     the active serialization configuration
+     * @param beanDesc   the description of the bean type being serialized
+     * @param serializer the default serializer created for this bean type
+     * @return the unmodified serializer from the superclass
+     */
     @Override
     public JsonSerializer<?> modifySerializer(SerializationConfig config, BeanDescription beanDesc, JsonSerializer<?> serializer) {
         return super.modifySerializer(config, beanDesc, serializer);
