@@ -17,6 +17,9 @@ purpose: Mask sensitive fields during JSON serialization for safe logging
 
 # TechBulls Secure Logging
 
+[![CI](https://github.com/techbulls/techbulls-secure-logging/actions/workflows/ci.yml/badge.svg)](https://github.com/techbulls/techbulls-secure-logging/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/techbulls/techbulls-secure-logging/graph/badge.svg)](https://codecov.io/gh/techbulls/techbulls-secure-logging)
+
 A Java library that masks sensitive field values during JSON serialization for safe logging. Uses an annotation-based approach with Jackson integration to prevent sensitive data (passwords, emails, tokens) from appearing in plain text in log files.
 
 ## Table of Contents
