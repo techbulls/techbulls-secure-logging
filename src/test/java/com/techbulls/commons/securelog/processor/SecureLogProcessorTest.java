@@ -16,7 +16,9 @@
 package com.techbulls.commons.securelog.processor;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
@@ -25,12 +27,14 @@ import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class SecureLogProcessorTest {
+
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
 
     @Test
     public void testWarningWhenToStringMissing() {
@@ -177,9 +181,12 @@ public class SecureLogProcessorTest {
             }
         };
 
-        List<String> options = strict
-                ? Arrays.asList("-Atechbulls.securelog.strict=true")
-                : Collections.emptyList();
+        List<String> options = new java.util.ArrayList<>();
+        options.add("-d");
+        options.add(tempFolder.getRoot().getAbsolutePath());
+        if (strict) {
+            options.add("-Atechbulls.securelog.strict=true");
+        }
 
         JavaCompiler.CompilationTask task = compiler.getTask(
                 null,
