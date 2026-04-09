@@ -8,6 +8,7 @@ maven-artifact: techbulls-secure-logging
 dependency: jackson-databind 2.15+
 license: Apache-2.0
 annotations: @SecureLog (class-level), @LogSensitive (field-level)
+annotation-processor: SecureLogProcessor (compile-time toString() check)
 entry-point: SecureJson.toJson(Object bean)
 interface: ValueFormatter { String format(Object value, String secureValue) }
 default-mask: "XXXX"
@@ -37,6 +38,7 @@ A Java library that masks sensitive field values during JSON serialization for s
 - [Jackson Integration](#jackson-integration)
 - [Custom ObjectMapper](#custom-objectmapper)
 - [Implementing toString](#implementing-tostring)
+- [Compile-Time Validation](#compile-time-validation)
 - [Thread Safety](#thread-safety)
 - [Requirements](#requirements)
 
@@ -608,6 +610,60 @@ public class MyModel {
 ```
 
 Do **not** use `@ToString` from Lombok on any class that requires masked output.
+
+## Compile-Time Validation
+
+The library includes a built-in annotation processor that checks at compile time whether classes annotated with `@SecureLog` have a directly declared `toString()` method. This helps prevent accidental logging of sensitive data in plain text.
+
+### How It Works
+
+When your project includes this library on the annotation processor path, the processor automatically runs during compilation. If a concrete class is annotated with `@SecureLog` but does not override `toString()`, a **compiler warning** is emitted:
+
+```
+warning: Class annotated with @SecureLog does not override toString(). Add: @Override public String toString() { return SecureJson.toJson(this); }
+```
+
+### Strict Mode
+
+To upgrade the warning to a **compile error** (recommended for CI pipelines), pass the compiler option `-Atechbulls.securelog.strict=true`:
+
+**Maven:**
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <configuration>
+        <compilerArgs>
+            <arg>-Atechbulls.securelog.strict=true</arg>
+        </compilerArgs>
+    </configuration>
+</plugin>
+```
+
+**Gradle:**
+```groovy
+compileJava {
+    options.compilerArgs += ['-Atechbulls.securelog.strict=true']
+}
+```
+
+### Suppressing the Warning
+
+If you intentionally omit `toString()` on a specific class, suppress the warning with:
+
+```java
+@SecureLog
+@SuppressWarnings("techbulls.securelog")
+public class MySpecialCase {
+    // ...
+}
+```
+
+### Notes
+
+- **Abstract classes and interfaces** are skipped — only concrete classes are checked.
+- **Inherited `toString()`** does not satisfy the check. The method must be declared directly in the annotated class, since an inherited `toString()` is unlikely to call `SecureJson.toJson(this)`.
+- **Lombok's `@ToString`** generates a method that does not call `SecureJson.toJson()`, so the processor will still warn. This is intentional — you should provide your own `toString()` override.
 
 ## Thread Safety
 
