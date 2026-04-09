@@ -84,19 +84,4 @@ public class SecureLogBeanSerializerModifier extends BeanSerializerModifier {
         return beanProperties;
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * This implementation delegates to the superclass without modification. It is overridden here
-     * as an extension point for potential future customization of the bean-level serializer.
-     *
-     * @param config     the active serialization configuration
-     * @param beanDesc   the description of the bean type being serialized
-     * @param serializer the default serializer created for this bean type
-     * @return the unmodified serializer from the superclass
-     */
-    @Override
-    public JsonSerializer<?> modifySerializer(SerializationConfig config, BeanDescription beanDesc, JsonSerializer<?> serializer) {
-        return super.modifySerializer(config, beanDesc, serializer);
-    }
 }

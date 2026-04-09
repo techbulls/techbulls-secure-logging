@@ -233,6 +233,7 @@ public class SecurePropertySerializer<T> extends JsonSerializer<T> {
      * @param serializers the provider for accessing serialization configuration
      * @throws IOException if an I/O error occurs during JSON generation
      */
+    @Override
     public void serialize(T value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
        gen.writeString(formatter.format(value, secureValue));
     }

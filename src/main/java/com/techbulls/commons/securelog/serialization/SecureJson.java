@@ -289,12 +289,9 @@ public class SecureJson {
         try {
             Constructor<? extends ValueFormatter> constructor = cls.getDeclaredConstructor();
             constructor.setAccessible(true);
-            if (constructor.getParameterCount() > 0) {
-                throw new IllegalStateException(cls.getName() + " should have a null-arg constructor");
-            }
             return constructor.newInstance();
         } catch (NoSuchMethodException e) {
-            throw new IllegalStateException("Unable to find any constructor for class " + cls.getName());
+            throw new IllegalStateException(cls.getName() + " must have a no-arg constructor");
         } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
             throw new IllegalStateException("Unable to instantiate object of class " + cls.getName() + " reflectively", e);
         }

@@ -203,6 +203,7 @@ Masks the local part of an email address while preserving the domain:
 public class EmailFormatter implements ValueFormatter {
     @Override
     public String format(Object value, String secureValue) {
+        if (value == null) return secureValue;
         return value.toString().replaceAll("[A-Za-z0-9_\\-\\.]+@", "xxxxxx@");
     }
 }
@@ -222,6 +223,7 @@ Shows only the last 2 digits of a phone number:
 public class MobileFormatter implements ValueFormatter {
     @Override
     public String format(Object value, String secureValue) {
+        if (value == null) return secureValue;
         String mobile = value.toString();
         if (mobile.length() <= 2) {
             return mobile;
@@ -290,6 +292,7 @@ You can build any masking strategy by implementing `ValueFormatter`:
 public class UpperCaseFormatter implements ValueFormatter {
     @Override
     public String format(Object value, String secureValue) {
+        if (value == null) return secureValue;
         return value.toString().replaceAll("[A-Z]", "X");
     }
 }
@@ -298,6 +301,7 @@ public class UpperCaseFormatter implements ValueFormatter {
 public class FirstCharFormatter implements ValueFormatter {
     @Override
     public String format(Object value, String secureValue) {
+        if (value == null) return secureValue;
         String str = value.toString();
         if (str.length() <= 1) return str;
         return str.charAt(0) + "XXXX";
@@ -336,6 +340,8 @@ System.out.println(payment);
 // Output: {"cardNumber":"XXXX","cvv":null}
 //          ^^ masked null       ^^ null preserved (secureNullValues = false)
 ```
+
+**Note:** When `secureNullValues = true`, the `value` parameter passed to `ValueFormatter.format()` will be `null`. Custom formatters used with `secureNullValues` must handle null values — for example, `if (value == null) return secureValue;`.
 
 ### Collections and Maps
 
