@@ -1,7 +1,7 @@
 <!--
 LLM-CONTEXT
 library: techbulls-secure-logging
-language: Java 8+
+language: Java 11+
 package: com.techbulls.commons.securelog
 maven-group: com.techbulls.commons.securelog
 maven-artifact: techbulls-secure-logging
@@ -67,12 +67,12 @@ implementation 'com.techbulls.commons.securelog:techbulls-secure-logging:0.1'
 
 **Without** secure logging:
 ```
-Login request: {"username": "john.doe@domain.com", "password": "secret123"}
+Payment: {"cardNumber": "4111-1111-1111-1234", "cvv": "737", "amount": 49.99, "merchant": "Acme Corp"}
 ```
 
 **With** secure logging:
 ```
-Login request: {"username": "john.doe@domain.com", "password": "XXXX"}
+Payment: {"cardNumber": "XXXX-XXXX-XXXX-1234", "cvv": "XXXX", "amount": 49.99, "merchant": "Acme Corp"}
 ```
 
 Three steps to get started:
@@ -84,13 +84,18 @@ import com.techbulls.commons.securelog.serialization.SecureJson;
 
 // 1. Annotate the class with @SecureLog
 @SecureLog
-public class LoginRequest {
-
-    private String username;
+public class PaymentRequest {
 
     // 2. Annotate sensitive fields with @LogSensitive
+    @LogSensitive(formatter = CardNumberFormatter.class)
+    private String cardNumber;
+
     @LogSensitive
-    private String password;
+    private String cvv;
+
+    private double amount;
+
+    private String merchant;
 
     // getters and setters...
 
@@ -102,15 +107,17 @@ public class LoginRequest {
 }
 ```
 
-Now any logging of this object masks the password automatically:
+Now any logging of this object masks sensitive fields automatically:
 
 ```java
-LoginRequest req = new LoginRequest();
-req.setUsername("john.doe@domain.com");
-req.setPassword("secret123");
+PaymentRequest payment = new PaymentRequest();
+payment.setCardNumber("4111-1111-1111-1234");
+payment.setCvv("737");
+payment.setAmount(49.99);
+payment.setMerchant("Acme Corp");
 
-log.info("Login request: {}", req);
-// Output: Login request: {"username":"john.doe@domain.com","password":"XXXX"}
+log.info("Payment: {}", payment);
+// Output: Payment: {"cardNumber":"XXXX-XXXX-XXXX-1234","cvv":"XXXX","amount":49.99,"merchant":"Acme Corp"}
 ```
 
 ## Annotations
@@ -674,6 +681,6 @@ public class MySpecialCase {
 
 ## Requirements
 
-- **Java:** 8 or higher
+- **Java:** 11 or higher
 - **Jackson:** jackson-databind 2.15.0 or compatible
 - **License:** Apache License 2.0

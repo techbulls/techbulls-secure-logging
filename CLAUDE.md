@@ -34,7 +34,7 @@ mvn clean package    # Build
 mvn test             # Run tests (JUnit 4)
 ```
 
-- Java 1.8 source/target
+- Java 11
 - Dependencies: jackson-databind 2.15.0, junit 4.13.1 (test), lombok 1.18.22 (test)
 - Published to Maven Central via Sonatype OSS
 
