@@ -40,8 +40,7 @@ import java.util.List;
  * </ul>
  * <p>
  * This modifier is registered with the {@link com.fasterxml.jackson.databind.ObjectMapper} by
- * {@link SecureJson#initMapper(com.fasterxml.jackson.databind.ObjectMapper)} as part of a custom
- * {@link com.fasterxml.jackson.databind.ser.SerializerFactory}.
+ * {@link SecureJson} as part of a custom {@link com.fasterxml.jackson.databind.ser.SerializerFactory}.
  *
  * @see SecurePropertySerializer
  * @see NullSecurePropertySerializer

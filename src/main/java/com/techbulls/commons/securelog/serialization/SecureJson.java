@@ -18,15 +18,13 @@ package com.techbulls.commons.securelog.serialization;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.ser.BeanSerializerFactory;
 import com.fasterxml.jackson.databind.ser.SerializerFactory;
 import com.techbulls.commons.securelog.ValueFormatter;
 import com.techbulls.commons.securelog.annotation.SecureLog;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.WeakHashMap;
 
 /**
  * <h3>SecureJson Class</h3>
@@ -57,7 +55,9 @@ import java.util.Set;
  * <b>Thread safety:</b> This class uses double-checked locking with a mutex to ensure that the
  * shared {@link ObjectMapper} is initialized exactly once in a thread-safe manner. Custom
  * {@link ObjectMapper} instances passed to {@link #toJson(ObjectMapper, Object, boolean, Class)}
- * are tracked in a set to avoid redundant initialization.
+ * are copied (not mutated) and cached in a {@link java.util.WeakHashMap} synchronized on the
+ * same mutex. The weak keys ensure that cached copies are eligible for garbage collection when
+ * the caller no longer holds a reference to their original mapper.
  * <p>
  * @see com.techbulls.commons.securelog.ValueFormatter
  * @see com.fasterxml.jackson.databind.JsonSerializer
@@ -72,17 +72,22 @@ import java.util.Set;
 public class SecureJson {
 
     /** The shared, lazily initialized {@link ObjectMapper} configured with secure serialization. */
-    private static ObjectMapper mapper;
+    private static volatile ObjectMapper mapper;
 
     /**
-     * Tracks {@link ObjectMapper} instances that have already been configured with the
-     * {@link SecureLogBeanSerializerModifier}, preventing redundant initialization when
-     * the same mapper is passed to {@link #toJson(ObjectMapper, Object, boolean, Class)} multiple times.
+     * Cache of configured {@link ObjectMapper} copies, keyed by the caller's original mapper instance.
+     * <p>
+     * When callers pass a custom {@link ObjectMapper} to {@link #toJson(ObjectMapper, Object, boolean, Class)},
+     * a configured copy is created and cached here to avoid repeated copying on subsequent calls.
+     * Using {@link WeakHashMap} ensures that entries are eligible for garbage collection when the
+     * caller no longer holds a strong reference to their original mapper, preventing memory accumulation.
+     * <p>
+     * Access must be synchronized on {@link #mutex} since {@link WeakHashMap} is not thread-safe.
      */
-    private static final Set<ObjectMapper> MAPPERS_ALREADY_INITIALIZED = new HashSet<>();
+    private static final WeakHashMap<ObjectMapper, ObjectMapper> configuredMapperCache = new WeakHashMap<>();
 
     /** Mutex object used for double-checked locking during lazy initialization of {@link #mapper}. */
-    private static Object mutex = new Object();
+    private static final Object mutex = new Object();
 
     /**
      * Returns the shared {@link ObjectMapper} instance, initializing it lazily on first access.
@@ -98,7 +103,7 @@ public class SecureJson {
             synchronized (mutex) {
                 // Double check after acquiring mutex that the mapper was not initialized.
                 if (mapper == null) {
-                    mapper = initMapper(new ObjectMapper());
+                    mapper = configureMapper(new ObjectMapper());
                 }
             }
         }
@@ -108,23 +113,48 @@ public class SecureJson {
 
 
     /**
-     * Configures the given {@link ObjectMapper} with a {@link com.fasterxml.jackson.databind.ser.SerializerFactory}
-     * that includes the {@link SecureLogBeanSerializerModifier} for detecting and masking sensitive fields.
+     * Configures the given {@link ObjectMapper} by adding the {@link SecureLogBeanSerializerModifier}
+     * to its existing {@link SerializerFactory}.
      * <p>
-     * If the mapper has already been initialized (tracked via {@link #MAPPERS_ALREADY_INITIALIZED}),
-     * this method is a no-op, ensuring that the modifier is not applied more than once to the same mapper.
+     * The modifier is added on top of the mapper's current serializer factory (obtained via
+     * {@link ObjectMapper#getSerializerFactory()}), preserving any custom serializers or modifiers
+     * already configured on the mapper.
      *
      * @param m the {@link ObjectMapper} to configure with secure serialization support
-     * @return the same {@link ObjectMapper} instance, now configured (or already configured)
+     * @return the same {@link ObjectMapper} instance, now configured
      */
-    private static ObjectMapper initMapper(ObjectMapper m) {
-        if (!MAPPERS_ALREADY_INITIALIZED.contains(m)) {
-            SecureLogBeanSerializerModifier serializerModifier = new SecureLogBeanSerializerModifier();
-            SerializerFactory serializerFactory = BeanSerializerFactory.instance.withSerializerModifier(serializerModifier);
-            m.setSerializerFactory(serializerFactory);
-            MAPPERS_ALREADY_INITIALIZED.add(m);
-        }
+    private static ObjectMapper configureMapper(ObjectMapper m) {
+        SecureLogBeanSerializerModifier serializerModifier = new SecureLogBeanSerializerModifier();
+        SerializerFactory serializerFactory = m.getSerializerFactory().withSerializerModifier(serializerModifier);
+        m.setSerializerFactory(serializerFactory);
         return m;
+    }
+
+
+    /**
+     * Returns a configured copy of the given {@link ObjectMapper}, creating and caching it on first access.
+     * <p>
+     * The caller's mapper is never modified. Instead, {@link ObjectMapper#copy()} is used to create
+     * an independent copy, which is then configured with the {@link SecureLogBeanSerializerModifier}.
+     * The copy is cached in {@link #configuredMapperCache} (keyed by the original mapper instance)
+     * so that subsequent calls with the same mapper avoid the cost of copying.
+     * <p>
+     * The mapper's configuration is captured at the time of the first call. Subsequent modifications
+     * to the source mapper will not be reflected in the cached copy. This is consistent with Jackson's
+     * own semantics: an {@link ObjectMapper} should be fully configured before first use.
+     *
+     * @param source the caller's {@link ObjectMapper} instance (not modified)
+     * @return a configured copy of the source mapper with secure serialization support
+     */
+    private static ObjectMapper getOrCreateConfiguredCopy(ObjectMapper source) {
+        synchronized (mutex) {
+            ObjectMapper configured = configuredMapperCache.get(source);
+            if (configured == null) {
+                configured = configureMapper(source.copy());
+                configuredMapperCache.put(source, configured);
+            }
+            return configured;
+        }
     }
 
 
@@ -182,7 +212,7 @@ public class SecureJson {
      *                          during serialization
      */
     public static String toJson(Object bean, boolean prettyPrint, Class<?> view){
-        return toJson(mapper(), bean, prettyPrint, view);
+        return writeJson(mapper(), bean, prettyPrint, view);
     }
 
     /**
@@ -190,16 +220,21 @@ public class SecureJson {
      * {@link ObjectMapper} along with the specified pretty-print and
      * {@link com.fasterxml.jackson.annotation.JsonView} settings.
      * <p>
-     * The provided mapper is automatically initialized with the {@link SecureLogBeanSerializerModifier}
-     * on first use (and tracked to avoid redundant initialization on subsequent calls). This allows
-     * callers to supply mappers configured with custom features such as {@code @JsonFilter} or
-     * custom serialization modules while still benefiting from secure masking.
+     * The provided mapper is <b>not modified</b>. Instead, a configured copy is created internally
+     * (via {@link ObjectMapper#copy()}) and cached for subsequent calls with the same mapper instance.
+     * This allows callers to supply mappers configured with custom features such as {@code @JsonFilter}
+     * or custom serialization modules while still benefiting from secure masking, without any
+     * side effects on the original mapper.
+     * <p>
+     * The mapper's configuration is captured at the time of the first call. Subsequent modifications
+     * to the source mapper will not be reflected in the cached copy. This is consistent with Jackson's
+     * own semantics: an {@link ObjectMapper} should be fully configured before first use.
      * <p>
      * If the {@code view} parameter is set to {@link SecureLog.Default}, no specific
      * {@link com.fasterxml.jackson.annotation.JsonView} is applied and all fields are serialized.
      *
-     * @param mapper      the {@link ObjectMapper} to use for serialization; will be configured
-     *                    with secure masking support if not already initialized
+     * @param mapper      the {@link ObjectMapper} to use as the basis for serialization; a configured
+     *                    copy is used internally and the original is never modified
      * @param bean        the object to serialize to a masked JSON string
      * @param prettyPrint {@code true} for indented output; {@code false} for compact output
      * @param view        the {@link com.fasterxml.jackson.annotation.JsonView} class to apply, or
@@ -209,7 +244,24 @@ public class SecureJson {
      *                          during serialization
      */
     public static String toJson(ObjectMapper mapper, Object bean, boolean prettyPrint, Class<?> view){
-        ObjectWriter writer = objectWriter(initMapper(mapper), prettyPrint);
+        return writeJson(getOrCreateConfiguredCopy(mapper), bean, prettyPrint, view);
+    }
+
+
+    /**
+     * Serializes the given bean to a JSON string using the provided (already configured) mapper.
+     *
+     * @param mapper      the configured {@link ObjectMapper} to use for serialization
+     * @param bean        the object to serialize
+     * @param prettyPrint {@code true} for indented output; {@code false} for compact output
+     * @param view        the {@link com.fasterxml.jackson.annotation.JsonView} class to apply, or
+     *                    {@link SecureLog.Default} to serialize without view filtering
+     * @return the JSON string representation with sensitive fields replaced by their mask values
+     * @throws RuntimeException if Jackson encounters a {@link com.fasterxml.jackson.core.JsonProcessingException}
+     *                          during serialization
+     */
+    private static String writeJson(ObjectMapper mapper, Object bean, boolean prettyPrint, Class<?> view) {
+        ObjectWriter writer = objectWriter(mapper, prettyPrint);
         if (view != SecureLog.Default.class) {
             writer = writer.withView(view);
         }

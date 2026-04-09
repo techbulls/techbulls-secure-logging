@@ -17,6 +17,7 @@ package com.techbulls.commons.securelog.serialization;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techbulls.commons.securelog.ValueFormatter;
 import com.techbulls.commons.securelog.annotation.LogSensitive;
 import com.techbulls.commons.securelog.annotation.SecureLog;
@@ -61,6 +62,88 @@ public class SecureJsonConcurrencyTest {
                 0,
                 runners.stream().filter(r -> r.isFailuresReported()).count()
         );
+    }
+
+    @Test
+    public void testConcurrentToJsonWithCustomMapper() {
+        int iterations = 1000;
+        int threadCount = 30;
+
+        ObjectMapper sharedMapper = new ObjectMapper();
+        CountDownLatch latch = new CountDownLatch(threadCount);
+
+        List<CustomMapperRunner> runners = new ArrayList<>(threadCount);
+        List<Thread> threads = new ArrayList<>(threadCount);
+        for (int i = 1; i <= threadCount; i++) {
+            CustomMapperRunner runner = new CustomMapperRunner(sharedMapper, iterations, latch);
+            runners.add(runner);
+            threads.add(new Thread(runner));
+        }
+
+        threads.forEach(t -> t.start());
+
+        threads.forEach(t -> {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                Assert.fail("Failed waiting for a thread to exit");
+            }
+        });
+
+        Assert.assertEquals(
+                "One or more threads reported errors when generating toJson with custom mapper concurrently",
+                0,
+                runners.stream().filter(r -> r.isFailuresReported()).count()
+        );
+    }
+
+    private static class CustomMapperRunner implements Runnable {
+        private final ObjectMapper mapper;
+        private final int iterations;
+        private final CountDownLatch latch;
+
+        @Getter
+        private boolean failuresReported = false;
+
+        private CustomMapperRunner(ObjectMapper mapper, int iterations, CountDownLatch latch) {
+            this.mapper = mapper;
+            this.iterations = iterations;
+            this.latch = latch;
+        }
+
+        @Override
+        public void run() {
+            latch.countDown();
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                failuresReported = true;
+                return;
+            }
+
+            for (int i = 1; i <= iterations; i++) {
+                try {
+                    A a = new A();
+                    a.setA("a");
+                    a.setB("b");
+                    a.setC("c");
+                    a.setD("d");
+
+                    String json = SecureJson.toJson(mapper, a, false, SecureLog.Default.class);
+                    JsonNode root = TestUtils.asJsonNode(json);
+                    TestUtils.assertContainsNodeWithText(root, "a", "XXXX");
+                    TestUtils.assertContainsNodeWithText(root, "b", "bXX");
+                    TestUtils.assertContainsNodeWithText(root, "c", "XXXX");
+                    TestUtils.assertContainsNodeWithText(root, "d", "d");
+                } catch (JsonProcessingException jpe) {
+                    jpe.printStackTrace();
+                    failuresReported = true;
+                    break;
+                }
+            }
+        }
     }
 
     private static class SecureToJsonRunner implements Runnable {
