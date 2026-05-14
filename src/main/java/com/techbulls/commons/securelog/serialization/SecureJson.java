@@ -25,6 +25,8 @@ import com.techbulls.commons.securelog.annotation.SecureLog;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.WeakHashMap;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 /**
  * <h2>SecureJson Class</h2>
@@ -127,6 +129,15 @@ public final class SecureJson {
      * @return the same {@link ObjectMapper} instance, now configured
      */
     private static ObjectMapper configureMapper(ObjectMapper m) {
+        // Auto-register Jackson modules if available
+        // (JavaTimeModule, Jdk8Module, KotlinModule, etc.)
+        m.findAndRegisterModules();
+        // Explicitly support Java 8 date/time types
+        m.registerModule(new JavaTimeModule());
+        // Serialize dates as ISO strings instead of timestamps
+        m.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        // Register secure serializer modifier
         SecureLogBeanSerializerModifier serializerModifier = new SecureLogBeanSerializerModifier();
         SerializerFactory serializerFactory = m.getSerializerFactory().withSerializerModifier(serializerModifier);
         m.setSerializerFactory(serializerFactory);
