@@ -129,7 +129,8 @@ public final class SecureJson {
      * @return the same {@link ObjectMapper} instance, now configured
      */
     private static ObjectMapper configureMapper(ObjectMapper m) {
-        // Auto-register Jackson modules if available (JavaTimeModule, Jdk8Module, KotlinModule, etc.)
+        // Auto-register Jackson modules if available
+        // (JavaTimeModule, Jdk8Module, KotlinModule, etc.)
         m.findAndRegisterModules();
         // Explicitly support Java 8 date/time types
         m.registerModule(new JavaTimeModule());
