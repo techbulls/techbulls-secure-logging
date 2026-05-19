@@ -7,11 +7,11 @@ maven-group: com.techbulls.commons.securelog
 maven-artifact: techbulls-secure-logging
 dependency: jackson-databind 2.15+
 license: Apache-2.0
-annotations: @SecureLog (class-level), @LogSensitive (field-level), @CardNumber (field-level), @Email (field-level)
+annotations: @SecureLog (class-level), @LogSensitive (field-level), @CardNumber (field-level), @Email (field-level), @Aadhaar (field-level), @MobileNumber (field-level), @PanNumber (field-level)
 annotation-processor: SecureLogProcessor (compile-time toString() check)
 entry-point: SecureJson.toJson(Object bean)
 interface: ValueFormatter { String format(Object value, String secureValue) }
-built-in-formatters: CardNumberFormatter, EmailFormatter, LastNCharsFormatter, FirstNCharsFormatter
+built-in-formatters: CardNumberFormatter, EmailFormatter, LastNCharsFormatter, FirstNCharsFormatter, AadhaarFormatter, MobileNumberFormatter, PanFormatter
 default-mask: "XXXX"
 meta-annotation: @LogSensitive can be placed on custom annotations for reusable masking strategies
 purpose: Mask sensitive fields during JSON serialization for safe logging
@@ -33,6 +33,9 @@ A Java library that masks sensitive field values during JSON serialization for s
   - [@LogSensitive](#logsensitive)
   - [@CardNumber](#cardnumber)
   - [@Email](#email)
+  - [@Aadhaar](#aadhaar)
+  - [@MobileNumber](#mobilenumber)
+  - [@PanNumber](#pannumber)
 - [Built-in Formatters](#built-in-formatters)
 - [API Reference](#api-reference)
 - [Custom ValueFormatter](#custom-valueformatter)
@@ -182,6 +185,38 @@ private String emailAddress;
 // "john.doe@gmail.com" → "j****@gmail.com"
 ```
 
+### @Aadhaar
+
+Field-level convenience annotation that masks Aadhaar numbers, revealing only the last 4 digits in dash-separated groups of 4. This is a meta-annotation over `@LogSensitive` with `AadhaarFormatter` pre-configured.
+
+```java
+@Aadhaar
+private String aadhaarNumber;
+// "234567891234" → "XXXX-XXXX-1234"
+// "2345-6789-1234" → "XXXX-XXXX-1234"
+```
+
+### @MobileNumber
+
+Field-level convenience annotation that masks mobile numbers, revealing only the last 4 digits. Handles optional country code prefixes (e.g. `+91`, `0091`). This is a meta-annotation over `@LogSensitive` with `MobileNumberFormatter` pre-configured.
+
+```java
+@MobileNumber
+private String mobile;
+// "9876543210" → "******3210"
+// "+919876543210" → "********3210"
+```
+
+### @PanNumber
+
+Field-level convenience annotation that masks PAN (Permanent Account Number), revealing only the last 4 characters. This is a meta-annotation over `@LogSensitive` with `PanFormatter` pre-configured.
+
+```java
+@PanNumber
+private String panNumber;
+// "ABCDE1234F" → "XXXXXX234F"
+```
+
 ## Built-in Formatters
 
 The `com.techbulls.commons.securelog.formatter` package provides ready-to-use `ValueFormatter` implementations for common masking patterns. Use them directly via `@LogSensitive(formatter = ...)` or through the convenience annotations above.
@@ -190,6 +225,9 @@ The `com.techbulls.commons.securelog.formatter` package provides ready-to-use `V
 |-----------|-----------------|---------|
 | `CardNumberFormatter` | Shows last 4 digits, masks rest with `X`, dash-separated groups of 4 | `"4111111111111111"` → `"XXXX-XXXX-XXXX-1111"` |
 | `EmailFormatter` | Shows first character of local part + `****` + full domain | `"john.doe@gmail.com"` → `"j****@gmail.com"` |
+| `AadhaarFormatter` | Shows last 4 digits, masks rest with `X`, dash-separated groups of 4 | `"234567891234"` → `"XXXX-XXXX-1234"` |
+| `MobileNumberFormatter` | Shows last 4 digits, masks rest with `*`, handles country codes | `"+919876543210"` → `"********3210"` |
+| `PanFormatter` | Shows last 4 characters, masks rest with `X` | `"ABCDE1234F"` → `"XXXXXX234F"` |
 | `LastNCharsFormatter` | Shows last N characters, masks rest with `*` (N = `secureValue` length) | `"123456789"` with `"XXXX"` → `"*****6789"` |
 | `FirstNCharsFormatter` | Shows first N characters, masks rest with `*` (N = `secureValue` length) | `"123456789"` with `"XXXX"` → `"1234*****"` |
 
