@@ -33,5 +33,7 @@ target
 .vscode
 
 # Internal files
+internal/
 improvements.md
+
 
