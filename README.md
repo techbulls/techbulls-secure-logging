@@ -5,7 +5,7 @@ language: Java 11+
 package: com.techbulls.commons.securelog
 maven-group: com.techbulls.commons.securelog
 maven-artifact: techbulls-secure-logging
-dependency: jackson-databind 2.15+
+dependency: jackson-databind 2.18+
 license: Apache-2.0
 annotations: @SecureLog (class-level), @LogSensitive (field-level), @CardNumber (field-level), @Email (field-level), @Aadhaar (field-level), @MobileNumber (field-level), @PanNumber (field-level)
 annotation-processor: SecureLogProcessor (compile-time toString() check)
@@ -27,6 +27,7 @@ A Java library that masks sensitive field values during JSON serialization for s
 ## Table of Contents
 
 - [Installation](#installation)
+- [Modules](#modules)
 - [Quick Start](#quick-start)
 - [Annotations](#annotations)
   - [@SecureLog](#securelog)
@@ -52,6 +53,7 @@ A Java library that masks sensitive field values during JSON serialization for s
 - [Implementing toString](#implementing-tostring)
 - [Compile-Time Validation](#compile-time-validation)
 - [Thread Safety](#thread-safety)
+- [SLF4J Integration](#slf4j-integration)
 - [Requirements](#requirements)
 
 ## Installation
@@ -62,15 +64,42 @@ A Java library that masks sensitive field values during JSON serialization for s
 <dependency>
     <groupId>com.techbulls.commons.securelog</groupId>
     <artifactId>techbulls-secure-logging</artifactId>
-    <version>0.1</version>
+        <version>0.3</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-implementation 'com.techbulls.commons.securelog:techbulls-secure-logging:0.1'
+implementation 'com.techbulls.commons.securelog:techbulls-secure-logging:0.3'
 ```
+
+## Modules
+
+This project contains two Maven modules:
+
+| Module | Artifact ID | Purpose |
+|--------|-------------|---------|
+| **Core** | `techbulls-secure-logging` | `SecureJson.toJson()` — direct masking via annotations |
+| **SLF4J** | `techbulls-secure-logging-slf4j` | `SecureLogger` — wraps `org.slf4j.Logger` to automatically inspect and mask `@SecureLog`-annotated objects |
+
+### When to Use Which Module
+
+- **Core (`techbulls-secure-logging`)**: Use when you control your model's `toString()` implementation and want explicit calls to `SecureJson.toJson()`.
+
+- **SLF4J (`techbulls-secure-logging-slf4j`)**: Use when you want automatic argument inspection — any object passed to a `SecureLogger` that is annotated with `@SecureLog` will be automatically transformed before logging.
+
+### SLF4J Module
+
+```xml
+<dependency>
+    <groupId>com.techbulls.commons.securelog</groupId>
+    <artifactId>techbulls-secure-logging-slf4j</artifactId>
+    <version>0.3</version>
+</dependency>
+```
+
+**Note:** The SLF4J module declares a `provided` dependency on `slf4j-api`. You must include your preferred SLF4J binding (Logback, Log4j, etc.) separately.
 
 ## Quick Start
 
@@ -798,8 +827,70 @@ public class MySpecialCase {
 
 `SecureJson` is thread-safe. The internal `ObjectMapper` is initialized using a double-checked locking pattern, and custom `ObjectMapper` instances are tracked in a `Set` to avoid duplicate initialization. Safe to call `SecureJson.toJson()` concurrently from multiple threads.
 
+## SLF4J Integration
+
+The `techbulls-secure-logging-slf4j` module provides a `SecureLoggerFactory` that creates `SecureLogger` instances — wrappers around standard SLF4J `Logger` that automatically inspect and transform `@SecureLog`-annotated objects before logging.
+
+### Quick Start
+
+```java
+import com.techbulls.commons.securelog.slf4j.SecureLogger;
+import com.techbulls.commons.securelog.slf4j.SecureLoggerFactory;
+import com.techbulls.commons.securelog.annotation.SecureLog;
+import com.techbulls.commons.securelog.annotation.LogSensitive;
+
+// Annotate your model with @SecureLog
+@SecureLog
+public class User {
+    @LogSensitive
+    private String password;
+
+    private String username;
+
+    @Override
+    public String toString() {
+        return SecureJson.toJson(this);
+    }
+}
+
+// Use SecureLogger instead of a plain Logger
+SecureLogger logger = SecureLoggerFactory.getLogger(UserService.class);
+
+User user = new User();
+user.setUsername("john");
+user.setPassword("secret123");
+logger.info("User logged in: {}", user);
+// Output: User logged in: {"password":"XXXX","username":"john"}
+```
+
+### How It Works
+
+Each log method on `SecureLogger` calls `SecureJson.toJson(arg)` on any `@SecureLog`-annotated argument before delegating to the underlying SLF4J logger. Non-annotated arguments pass through unchanged.
+
+### API
+
+```java
+// Get logger by class
+SecureLogger logger = SecureLoggerFactory.getLogger(MyClass.class);
+
+// Get logger by name
+SecureLogger logger = SecureLoggerFactory.getLogger("com.example.MyLogger");
+
+// All standard SLF4J log methods are supported
+logger.info("Single arg: {}", secureBean);
+logger.info("Two args: {} {}", secureBean, plainBean);
+logger.info("Varargs: {} {} {}", secureBean, plainBean, "text");
+logger.error("Error occurred", exception);
+```
+
+### Notes
+
+- `SecureLogger` implements `org.slf4j.Logger` — it is a drop-in replacement for standard SLF4J loggers
+- Compatible with SLF4J 1.6.x and higher
+- `slf4j-api` is `provided` scope — you must bring your own SLF4J binding (Logback, Log4j, etc.)
+
 ## Requirements
 
 - **Java:** 11 or higher
-- **Jackson:** jackson-databind 2.15.0 or compatible
+- **Jackson:** jackson-databind 2.18.2 or compatible
 - **License:** Apache License 2.0
