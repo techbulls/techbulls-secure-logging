@@ -192,7 +192,7 @@
                                     <goal>sign</goal>
                                 </goals>
                                 <configuration>
-                                    <keyname>F1A4DD0E093D90C744F10F9A32041EF459E9A6D5</keyname>
+                                    <keyname>${env.GPG_SIGNING_KEY}</keyname>
                                 </configuration>
                             </execution>
                         </executions>
