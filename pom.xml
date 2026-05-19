@@ -21,7 +21,7 @@
     <artifactId>techbulls-secure-logging-parent</artifactId>
     <version>0.3-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>techbulls secure logging</name>
+    <name>TechBulls Secure Logging</name>
     <description>A library with annotations to help converting objects to JSONs omitting sensitive data</description>
     <url>https://github.com/techbulls/techbulls-secure-logging</url>
     <scm>
